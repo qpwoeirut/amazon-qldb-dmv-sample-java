@@ -164,6 +164,6 @@ object InsertIonTypes {
      */
     private class Document @JsonCreator constructor(
         @get:JsonProperty("Name")
-        @param:JsonProperty("Name") private val name: IonValue
+        @param:JsonProperty("Name") val name: IonValue
     )
 }

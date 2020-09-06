@@ -49,7 +49,7 @@ object QueryHistory {
      */
     private fun previousPrimaryOwners(txn: TransactionExecutor, vin: String, query: String) {
         try {
-            val docId = getDocumentIdByVin(txn, vin!!)
+            val docId = getDocumentIdByVin(txn, vin)
             log.info("Querying the 'VehicleRegistration' table's history using VIN: {}...", vin)
             val result = txn.execute(query, Constants.MAPPER.writeValueAsIonValue(docId))
             ScanTable.printDocuments(result)
