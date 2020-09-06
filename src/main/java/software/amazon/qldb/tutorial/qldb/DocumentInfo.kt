@@ -31,14 +31,14 @@ class DocumentInfo @JsonCreator constructor(
     @param:JsonProperty("statements") val statementIndexList: List<Int>
 ) {
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o !is DocumentInfo) {
+        if (other !is DocumentInfo) {
             return false
         }
-        val that = o
+        val that = other
         if (tableName != that.tableName) {
             return false
         }

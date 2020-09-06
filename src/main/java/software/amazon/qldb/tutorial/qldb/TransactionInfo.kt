@@ -39,18 +39,17 @@ class TransactionInfo @JsonCreator constructor(
         return documents
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o !is TransactionInfo) {
+        if (other !is TransactionInfo) {
             return false
         }
-        val that = o
-        if (if (getStatements() != null) getStatements() != that.getStatements() else that.getStatements() != null) {
+        if (if (getStatements() != null) getStatements() != other.getStatements() else other.getStatements() != null) {
             return false
         }
-        return if (getDocuments() != null) getDocuments() == that.getDocuments() else that.getDocuments() == null
+        return if (getDocuments() != null) getDocuments() == other.getDocuments() else other.getDocuments() == null
     }
 
     override fun hashCode(): Int {

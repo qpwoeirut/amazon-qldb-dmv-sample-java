@@ -59,39 +59,38 @@ class JournalBlock @JsonCreator constructor(
                     |}""".trimMargin()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o !is JournalBlock) {
+        if (other !is JournalBlock) {
             return false
         }
-        val that = o
-        if (!blockAddress.equals(that.blockAddress)) {
+        if (!blockAddress.equals(other.blockAddress)) {
             return false
         }
-        if (transactionId != that.transactionId) {
+        if (transactionId != other.transactionId) {
             return false
         }
-        if (blockTimestamp != that.blockTimestamp) {
+        if (blockTimestamp != other.blockTimestamp) {
             return false
         }
-        if (!Arrays.equals(blockHash, that.blockHash)) {
+        if (!blockHash.contentEquals(other.blockHash)) {
             return false
         }
-        if (!Arrays.equals(entriesHash, that.entriesHash)) {
+        if (!entriesHash.contentEquals(other.entriesHash)) {
             return false
         }
-        if (!Arrays.equals(previousBlockHash, that.previousBlockHash)) {
+        if (!previousBlockHash.contentEquals(other.previousBlockHash)) {
             return false
         }
-        if (!Arrays.deepEquals(entriesHashList, that.entriesHashList)) {
+        if (!entriesHashList.contentDeepEquals(other.entriesHashList)) {
             return false
         }
-        if (transactionInfo != that.transactionInfo) {
+        if (transactionInfo != other.transactionInfo) {
             return false
         }
-        return revisions == that.revisions
+        return revisions == other.revisions
     }
 
     override fun hashCode(): Int {

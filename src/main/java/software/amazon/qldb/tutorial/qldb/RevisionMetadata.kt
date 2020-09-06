@@ -77,14 +77,14 @@ class RevisionMetadata @JsonCreator constructor(
      *
      * @return `true` if the two objects are equal, `false` otherwise.
      */
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val metadata = o as RevisionMetadata
+        val metadata = other as RevisionMetadata
         return version == metadata.version && id == metadata.id && txTime == metadata.txTime && txId == metadata.txId
     }
 
