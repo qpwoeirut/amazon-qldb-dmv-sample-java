@@ -53,7 +53,7 @@ object DeletionProtection {
         }
     }
 
-    fun createWithDeletionProtection(ledgerName: String?): CreateLedgerResult {
+    fun createWithDeletionProtection(ledgerName: String): CreateLedgerResult {
         log.info("Let's create the ledger with name: {}...", ledgerName)
         val request = CreateLedgerRequest()
             .withName(ledgerName)
@@ -65,7 +65,7 @@ object DeletionProtection {
     }
 
     @JvmStatic
-    fun setDeletionProtection(ledgerName: String?, deletionProtection: Boolean): UpdateLedgerResult {
+    fun setDeletionProtection(ledgerName: String, deletionProtection: Boolean): UpdateLedgerResult {
         log.info("Let's set deletionProtection to {} for the ledger with name {}", deletionProtection, ledgerName)
         val request = UpdateLedgerRequest()
             .withName(ledgerName)

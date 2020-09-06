@@ -38,13 +38,15 @@ class QldbRevision @JsonCreator constructor(
      *
      * @return the [BlockAddress] object.
      */
-    @param:JsonProperty("blockAddress") val blockAddress: BlockAddress?,
+    @param:JsonProperty("blockAddress") val blockAddress: BlockAddress,
+
     /**
      * Gets the metadata of the revision.
      *
      * @return the [RevisionMetadata] object.
      */
-    @param:JsonProperty("metadata") val metadata: RevisionMetadata?,
+    @param:JsonProperty("metadata") val metadata: RevisionMetadata,
+
     /**
      * Gets the SHA-256 hash value of the data.
      *
@@ -56,7 +58,7 @@ class QldbRevision @JsonCreator constructor(
      *
      * @return the revision data.
      */
-    @param:JsonProperty("data") val data: IonStruct?
+    @param:JsonProperty("data") val data: IonStruct
 ) {
 
     /**

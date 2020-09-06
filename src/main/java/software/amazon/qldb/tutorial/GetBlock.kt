@@ -15,27 +15,22 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazon.ion.IonStruct;
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.model.GetBlockRequest;
-import com.amazonaws.services.qldb.model.GetBlockResult;
-import com.amazonaws.services.qldb.model.GetDigestResult;
-import com.amazonaws.services.qldb.model.ValueHolder;
-
-import software.amazon.qldb.tutorial.qldb.BlockAddress;
-import software.amazon.qldb.tutorial.qldb.JournalBlock;
-import software.amazon.qldb.tutorial.qldb.QldbRevision;
-import software.amazon.qldb.tutorial.model.SampleData;
-import software.amazon.qldb.tutorial.qldb.QldbStringUtils;
+import com.amazon.ion.IonStruct
+import com.amazonaws.services.qldb.model.GetBlockRequest
+import com.amazonaws.services.qldb.model.GetBlockResult
+import com.amazonaws.services.qldb.model.ValueHolder
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.ConnectToLedger.driver
+import software.amazon.qldb.tutorial.GetDigest.getDigest
+import software.amazon.qldb.tutorial.model.SampleData
+import software.amazon.qldb.tutorial.qldb.BlockAddress
+import software.amazon.qldb.tutorial.qldb.JournalBlock
+import software.amazon.qldb.tutorial.qldb.QldbRevision
+import software.amazon.qldb.tutorial.qldb.QldbStringUtils.toUnredactedString
+import java.io.IOException
 
 /**
  * Get a journal block from a QLDB ledger.
@@ -43,125 +38,140 @@ import software.amazon.qldb.tutorial.qldb.QldbStringUtils;
  * After getting the block, we get the digest of the ledger and validate the
  * proof returned in the getBlock response.
  *
- * <p>
+ *
+ *
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public class GetBlock {
+object GetBlock {
+    val log = LoggerFactory.getLogger(QueryHistory::class.java)
+    val client = CreateLedger.client
 
-    public static final Logger log = LoggerFactory.getLogger(QueryHistory.class);
-    public static AmazonQLDB client = CreateLedger.getClient();
-
-    private GetBlock() {}
-
-    public static void main(String[] args) {
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-            List<IonStruct> results = ConnectToLedger.getDriver().execute(txn -> {
-                final String vin = SampleData.VEHICLES.get(1).getVin();
-                return GetRevision.queryRegistrationsByVin(txn, vin);
-            });
-            BlockAddress blockAddress = Constants.MAPPER.readValue(results.get(0), QldbRevision.class).getBlockAddress();
-            verifyBlock(Constants.LEDGER_NAME, blockAddress);
-        } catch (Exception e) {
-            log.error("Unable to query vehicle registration by Vin.", e);
+            val results = driver.execute<List<IonStruct>> { txn ->
+                val vin = SampleData.VEHICLES[1].vin
+                GetRevision.queryRegistrationsByVin(txn, vin)
+            }
+            val blockAddress = Constants.MAPPER.readValue(results[0], QldbRevision::class.java).blockAddress
+            verifyBlock(Constants.LEDGER_NAME, blockAddress)
+        } catch (e: Exception) {
+            log.error("Unable to query vehicle registration by Vin.", e)
         }
     }
 
-    public static GetBlockResult getBlock(String ledgerName, BlockAddress blockAddress) {
-        log.info("Let's get the block for block address {} of the ledger named {}.", blockAddress, ledgerName);
-        try {
-            GetBlockRequest request = new GetBlockRequest()
+    fun getBlock(ledgerName: String, blockAddress: BlockAddress): GetBlockResult {
+        log.info("Let's get the block for block address {} of the ledger named {}.", blockAddress, ledgerName)
+        return try {
+            val request = GetBlockRequest()
                 .withName(ledgerName)
-                .withBlockAddress(new ValueHolder().withIonText(Constants.MAPPER.writeValueAsIonValue(blockAddress).toString()));
-            GetBlockResult result = client.getBlock(request);
-            log.info("Success. GetBlock: {}.", QldbStringUtils.toUnredactedString(result));
-            return result;
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+                .withBlockAddress(
+                    ValueHolder().withIonText(
+                        Constants.MAPPER.writeValueAsIonValue(blockAddress).toString()
+                    )
+                )
+            val result = client.getBlock(request)
+            log.info("Success. GetBlock: {}.", toUnredactedString(result))
+            result
+        } catch (ioe: IOException) {
+            throw IllegalStateException(ioe)
         }
     }
 
-    public static GetBlockResult getBlockWithProof(String ledgerName, BlockAddress blockAddress, BlockAddress tipBlockAddress) {
-        log.info("Let's get the block for block address {}, digest tip address {}, for the ledger named {}.", blockAddress,
-                 tipBlockAddress, ledgerName);
-        try {
-            GetBlockRequest request = new GetBlockRequest()
+    fun getBlockWithProof(
+        ledgerName: String,
+        blockAddress: BlockAddress,
+        tipBlockAddress: BlockAddress
+    ): GetBlockResult {
+        log.info(
+            "Let's get the block for block address {}, digest tip address {}, for the ledger named {}.", blockAddress,
+            tipBlockAddress, ledgerName
+        )
+        return try {
+            val request = GetBlockRequest()
                 .withName(ledgerName)
-                .withBlockAddress(new ValueHolder().withIonText(Constants.MAPPER.writeValueAsIonValue(blockAddress).toString()))
-                .withDigestTipAddress(new ValueHolder().withIonText(Constants.MAPPER.writeValueAsIonValue(tipBlockAddress)
-                                                                            .toString()));
-            GetBlockResult result = client.getBlock(request);
-            log.info("Success. GetBlock: {}.", QldbStringUtils.toUnredactedString(result));
-            return result;
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+                .withBlockAddress(
+                    ValueHolder().withIonText(
+                        Constants.MAPPER.writeValueAsIonValue(blockAddress).toString()
+                    )
+                )
+                .withDigestTipAddress(
+                    ValueHolder().withIonText(
+                        Constants.MAPPER.writeValueAsIonValue(tipBlockAddress)
+                            .toString()
+                    )
+                )
+            val result = client.getBlock(request)
+            log.info("Success. GetBlock: {}.", toUnredactedString(result))
+            result
+        } catch (ioe: IOException) {
+            throw IllegalStateException(ioe)
         }
     }
 
-    public static void verifyBlock(String ledgerName, BlockAddress blockAddress) throws Exception {
-        log.info("Lets verify blocks for ledger with name={}.", ledgerName);
-
+    @Throws(Exception::class)
+    fun verifyBlock(ledgerName: String, blockAddress: BlockAddress) {
+        log.info("Lets verify blocks for ledger with name={}.", ledgerName)
         try {
-            log.info("First, let's get a digest");
-            GetDigestResult digestResult = GetDigest.getDigest(ledgerName);
-            BlockAddress tipBlockAddress = Constants.MAPPER.readValue(digestResult.getDigestTipAddress().getIonText(),
-                                                                      BlockAddress.class);
-
-            ValueHolder digestTipAddress = digestResult.getDigestTipAddress();
-            byte[] digestBytes = Verifier.convertByteBufferToByteArray(digestResult.getDigest());
-
-            log.info("Got a ledger digest. Digest end address={}, digest={}.",
-                QldbStringUtils.toUnredactedString(digestTipAddress),
-                Verifier.toBase64(digestBytes));
-
-            GetBlockResult getBlockResult = getBlockWithProof(ledgerName, blockAddress, tipBlockAddress);
-            JournalBlock block = Constants.MAPPER.readValue(getBlockResult.getBlock().getIonText(), JournalBlock.class);
-
-            boolean verified = Verifier.verify(
-                block.getBlockHash(),
+            log.info("First, let's get a digest")
+            val digestResult = getDigest(ledgerName)
+            val tipBlockAddress = Constants.MAPPER.readValue(
+                digestResult.digestTipAddress.ionText,
+                BlockAddress::class.java
+            )
+            val digestTipAddress = digestResult.digestTipAddress
+            val digestBytes = Verifier.convertByteBufferToByteArray(digestResult.digest)
+            log.info(
+                "Got a ledger digest. Digest end address={}, digest={}.",
+                toUnredactedString(digestTipAddress),
+                Verifier.toBase64(digestBytes)
+            )
+            val getBlockResult = getBlockWithProof(ledgerName, blockAddress, tipBlockAddress)
+            val block = Constants.MAPPER.readValue(getBlockResult.block.ionText, JournalBlock::class.java)
+            var verified = Verifier.verify(
+                block.blockHash,
                 digestBytes,
-                getBlockResult.getProof().getIonText()
-            );
-
+                getBlockResult.proof.ionText
+            )
             if (!verified) {
-                throw new AssertionError("Block is not verified!");
+                throw AssertionError("Block is not verified!")
             } else {
-                log.info("Success! The block is verified.");
+                log.info("Success! The block is verified.")
             }
-
-            byte[] alteredDigest = Verifier.flipRandomBit(digestBytes);
-            log.info("Let's try flipping one bit in the digest and assert that the block is NOT verified. "
-                + "The altered digest is: {}.", Verifier.toBase64(alteredDigest));
+            val alteredDigest = Verifier.flipRandomBit(digestBytes)
+            log.info(
+                "Let's try flipping one bit in the digest and assert that the block is NOT verified. "
+                        + "The altered digest is: {}.", Verifier.toBase64(alteredDigest)
+            )
             verified = Verifier.verify(
-                block.getBlockHash(),
+                block.blockHash,
                 alteredDigest,
-                getBlockResult.getProof().getIonText()
-            );
-
+                getBlockResult.proof.ionText
+            )
             if (verified) {
-                throw new AssertionError("Expected block to not be verified against altered digest.");
+                throw AssertionError("Expected block to not be verified against altered digest.")
             } else {
-                log.info("Success! As expected flipping a bit in the digest causes verification to fail.");
+                log.info("Success! As expected flipping a bit in the digest causes verification to fail.")
             }
-
-            byte[] alteredBlockHash = Verifier.flipRandomBit(block.getBlockHash());
-            log.info("Let's try flipping one bit in the block's hash and assert that the block is NOT "
-                + "verified. The altered block hash is: {}.", Verifier.toBase64(alteredBlockHash));
+            val alteredBlockHash = Verifier.flipRandomBit(block.blockHash)
+            log.info(
+                "Let's try flipping one bit in the block's hash and assert that the block is NOT "
+                        + "verified. The altered block hash is: {}.", Verifier.toBase64(alteredBlockHash)
+            )
             verified = Verifier.verify(
                 alteredBlockHash,
                 digestBytes,
-                getBlockResult.getProof().getIonText()
-            );
-
+                getBlockResult.proof.ionText
+            )
             if (verified) {
-                throw new AssertionError("Expected altered block hash to not be verified against digest.");
+                throw AssertionError("Expected altered block hash to not be verified against digest.")
             } else {
-                log.info("Success! As expected flipping a bit in the block hash causes verification to fail.");
+                log.info("Success! As expected flipping a bit in the block hash causes verification to fail.")
             }
-
-        } catch (Exception e) {
-            log.error("Failed to verify blocks in the ledger with name={}.", ledgerName, e);
-            throw e;
+        } catch (e: Exception) {
+            log.error("Failed to verify blocks in the ledger with name={}.", ledgerName, e)
+            throw e
         }
     }
 }

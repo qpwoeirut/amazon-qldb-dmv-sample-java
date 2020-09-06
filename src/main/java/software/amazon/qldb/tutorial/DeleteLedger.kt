@@ -55,7 +55,7 @@ object DeleteLedger {
      * @return DeleteLedgerResult.
      */
     @JvmStatic
-    fun delete(ledgerName: String?): DeleteLedgerResult {
+    fun delete(ledgerName: String): DeleteLedgerResult {
         log.info("Attempting to delete the ledger with name: {}...", ledgerName)
         val request = DeleteLedgerRequest().withName(ledgerName)
         val result = client.deleteLedger(request)
@@ -72,7 +72,7 @@ object DeleteLedger {
      */
     @JvmStatic
     @Throws(InterruptedException::class)
-    fun waitForDeleted(ledgerName: String?) {
+    fun waitForDeleted(ledgerName: String) {
         log.info("Waiting for the ledger to be deleted...")
         while (true) {
             try {

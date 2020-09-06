@@ -59,7 +59,7 @@ object DescribeJournalExport {
      * @return [DescribeJournalS3ExportResult] from QLDB.
      */
     @JvmStatic
-    fun describeExport(ledgerName: String?, exportId: String?): DescribeJournalS3ExportResult {
+    fun describeExport(ledgerName: String, exportId: String?): DescribeJournalS3ExportResult {
         log.info("Let's describe a journal export for ledger with name: {}, ExportId: {}...", ledgerName, exportId)
         val request = DescribeJournalS3ExportRequest()
             .withName(ledgerName)

@@ -72,7 +72,7 @@ object CreateLedger {
      * @return [CreateLedgerResult] from QLDB.
      */
     @JvmStatic
-    fun create(ledgerName: String?): CreateLedgerResult {
+    fun create(ledgerName: String): CreateLedgerResult {
         log.info("Let's create the ledger with name: {}...", ledgerName)
         val request = CreateLedgerRequest()
             .withName(ledgerName)
@@ -91,7 +91,7 @@ object CreateLedger {
      */
     @JvmStatic
     @Throws(InterruptedException::class)
-    fun waitForActive(ledgerName: String?): DescribeLedgerResult {
+    fun waitForActive(ledgerName: String): DescribeLedgerResult {
         log.info("Waiting for ledger to become active...")
         while (true) {
             val result = DescribeLedger.describe(ledgerName)

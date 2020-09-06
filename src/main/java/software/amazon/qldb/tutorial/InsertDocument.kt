@@ -15,23 +15,19 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazon.ion.IonValue;
-
-import software.amazon.qldb.TransactionExecutor;
-import software.amazon.qldb.tutorial.model.DriversLicense;
-import software.amazon.qldb.tutorial.model.SampleData;
-import software.amazon.qldb.tutorial.model.VehicleRegistration;
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.ConnectToLedger.driver
+import software.amazon.qldb.tutorial.model.DriversLicense
+import software.amazon.qldb.tutorial.model.SampleData
+import software.amazon.qldb.tutorial.model.SampleData.getDocumentIdsFromDmlResult
+import software.amazon.qldb.tutorial.model.SampleData.updateOwnerVehicleRegistration
+import software.amazon.qldb.tutorial.model.SampleData.updatePersonIdDriversLicense
+import software.amazon.qldb.tutorial.model.VehicleRegistration
+import java.io.IOException
+import java.util.*
 
 /**
  * Insert documents into a table in a QLDB ledger.
@@ -39,33 +35,33 @@ import software.amazon.qldb.tutorial.model.VehicleRegistration;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class InsertDocument {
-    public static final Logger log = LoggerFactory.getLogger(InsertDocument.class);
-
-    private InsertDocument() { }
+object InsertDocument {
+    val log = LoggerFactory.getLogger(InsertDocument::class.java)
 
     /**
      * Insert the given list of documents into the specified table and return the document IDs of the inserted documents.
      *
      * @param txn
-     *              The {@link TransactionExecutor} for lambda execute.
+     * The [TransactionExecutor] for lambda execute.
      * @param tableName
-     *              Name of the table to insert documents into.
+     * Name of the table to insert documents into.
      * @param documents
-     *              List of documents to insert into the specified table.
+     * List of documents to insert into the specified table.
      * @return a list of document IDs.
-     * @throws IllegalStateException if failed to convert documents into an {@link IonValue}.
+     * @throws IllegalStateException if failed to convert documents into an [IonValue].
      */
-    public static List<String> insertDocuments(final TransactionExecutor txn, final String tableName,
-                                               final List documents) {
-        log.info("Inserting some documents in the {} table...", tableName);
-        try {
-            final String query = String.format("INSERT INTO %s ?", tableName);
-            final IonValue ionDocuments = Constants.MAPPER.writeValueAsIonValue(documents);
-
-            return SampleData.getDocumentIdsFromDmlResult(txn.execute(query, ionDocuments));
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+    @JvmStatic
+    fun insertDocuments(
+        txn: TransactionExecutor, tableName: String?,
+        documents: List<*>?
+    ): List<String?> {
+        log.info("Inserting some documents in the {} table...", tableName)
+        return try {
+            val query = String.format("INSERT INTO %s ?", tableName)
+            val ionDocuments = Constants.MAPPER.writeValueAsIonValue(documents)
+            getDocumentIdsFromDmlResult(txn.execute(query, ionDocuments))
+        } catch (ioe: IOException) {
+            throw IllegalStateException(ioe)
         }
     }
 
@@ -73,34 +69,46 @@ public final class InsertDocument {
      * Update PersonIds in driver's licenses and in vehicle registrations using document IDs.
      *
      * @param documentIds
-     *              List of document IDs representing the PersonIds in DriversLicense and PrimaryOwners in VehicleRegistration.
+     * List of document IDs representing the PersonIds in DriversLicense and PrimaryOwners in VehicleRegistration.
      * @param licenses
-     *              List of driver's licenses to update.
+     * List of driver's licenses to update.
      * @param registrations
-     *              List of registrations to update.
+     * List of registrations to update.
      */
-    public static void updatePersonId(final List<String> documentIds, final List<DriversLicense> licenses,
-                                      final List<VehicleRegistration> registrations) {
-        for (int i = 0; i < documentIds.size(); ++i) {
-            DriversLicense license = SampleData.LICENSES.get(i);
-            VehicleRegistration registration = SampleData.REGISTRATIONS.get(i);
-            licenses.add(SampleData.updatePersonIdDriversLicense(license, documentIds.get(i)));
-            registrations.add(SampleData.updateOwnerVehicleRegistration(registration, documentIds.get(i)));
+    fun updatePersonId(
+        documentIds: List<String?>, licenses: MutableList<DriversLicense?>,
+        registrations: MutableList<VehicleRegistration?>
+    ) {
+        for (i in documentIds.indices) {
+            val license = SampleData.LICENSES[i]
+            val registration = SampleData.REGISTRATIONS[i]
+            licenses.add(updatePersonIdDriversLicense(license, documentIds[i]))
+            registrations.add(updateOwnerVehicleRegistration(registration, documentIds[i]!!))
         }
     }
 
-    public static void main(final String... args) {
-        final List<DriversLicense> newDriversLicenses = new ArrayList<>();
-        final List<VehicleRegistration> newVehicleRegistrations = new ArrayList<>();
-        ConnectToLedger.getDriver().execute(txn -> {
-            List<String> documentIds = insertDocuments(txn, Constants.PERSON_TABLE_NAME, SampleData.PEOPLE);
-            updatePersonId(documentIds, newDriversLicenses, newVehicleRegistrations);
-            insertDocuments(txn, Constants.VEHICLE_TABLE_NAME, SampleData.VEHICLES);
-            insertDocuments(txn, Constants.VEHICLE_REGISTRATION_TABLE_NAME,
-                    Collections.unmodifiableList(newVehicleRegistrations));
-            insertDocuments(txn, Constants.DRIVERS_LICENSE_TABLE_NAME,
-                    Collections.unmodifiableList(newDriversLicenses));
-        });
-        log.info("Documents inserted successfully!");
+    @JvmStatic
+    fun main(args: Array<String>) {
+        main()
+    }
+
+    @JvmStatic
+    fun main() {
+        val newDriversLicenses: MutableList<DriversLicense?> = ArrayList()
+        val newVehicleRegistrations: MutableList<VehicleRegistration?> = ArrayList()
+        driver.execute { txn: TransactionExecutor ->
+            val documentIds = insertDocuments(txn, Constants.PERSON_TABLE_NAME, SampleData.PEOPLE)
+            updatePersonId(documentIds, newDriversLicenses, newVehicleRegistrations)
+            insertDocuments(txn, Constants.VEHICLE_TABLE_NAME, SampleData.VEHICLES)
+            insertDocuments(
+                txn, Constants.VEHICLE_REGISTRATION_TABLE_NAME,
+                Collections.unmodifiableList(newVehicleRegistrations)
+            )
+            insertDocuments(
+                txn, Constants.DRIVERS_LICENSE_TABLE_NAME,
+                Collections.unmodifiableList(newDriversLicenses)
+            )
+        }
+        log.info("Documents inserted successfully!")
     }
 }

@@ -15,16 +15,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.model.GetDigestRequest;
-import com.amazonaws.services.qldb.model.GetDigestResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.qldb.tutorial.qldb.QldbStringUtils;
+import com.amazonaws.services.qldb.model.GetDigestRequest
+import com.amazonaws.services.qldb.model.GetDigestResult
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.tutorial.qldb.QldbStringUtils.toUnredactedString
 
 /**
  * This is an example for retrieving the digest of a particular ledger.
@@ -32,27 +28,25 @@ import software.amazon.qldb.tutorial.qldb.QldbStringUtils;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class GetDigest {
-    public static final Logger log = LoggerFactory.getLogger(GetDigest.class);
-    public static AmazonQLDB client = CreateLedger.getClient();
-
-    private GetDigest() { }
+object GetDigest {
+    val log = LoggerFactory.getLogger(GetDigest::class.java)
+    var client = CreateLedger.client
 
     /**
-     * Calls {@link #getDigest(String)} for a ledger.
+     * Calls [.getDigest] for a ledger.
      *
      * @param args
-     *              Arbitrary command-line arguments.
+     * Arbitrary command-line arguments.
      * @throws Exception if failed to get a ledger digest.
      */
-    public static void main(final String... args) throws Exception {
+    @Throws(Exception::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-
-            getDigest(Constants.LEDGER_NAME);
-
-        } catch (Exception e) {
-            log.error("Unable to get a ledger digest!", e);
-            throw e;
+            getDigest(Constants.LEDGER_NAME)
+        } catch (e: Exception) {
+            log.error("Unable to get a ledger digest!", e)
+            throw e
         }
     }
 
@@ -60,15 +54,16 @@ public final class GetDigest {
      * Get the digest for the specified ledger.
      *
      * @param ledgerName
-     *              The ledger to get digest from.
-     * @return {@link GetDigestResult}.
+     * The ledger to get digest from.
+     * @return [GetDigestResult].
      */
-    public static GetDigestResult getDigest(final String ledgerName) {
-        log.info("Let's get the current digest of the ledger named {}.", ledgerName);
-        GetDigestRequest request = new GetDigestRequest()
-                .withName(ledgerName);
-        GetDigestResult result = client.getDigest(request);
-        log.info("Success. LedgerDigest: {}.", QldbStringUtils.toUnredactedString(result));
-        return result;
+    @JvmStatic
+    fun getDigest(ledgerName: String): GetDigestResult {
+        log.info("Let's get the current digest of the ledger named {}.", ledgerName)
+        val request = GetDigestRequest()
+            .withName(ledgerName)
+        val result = client.getDigest(request)
+        log.info("Success. LedgerDigest: {}.", toUnredactedString(result))
+        return result
     }
 }
