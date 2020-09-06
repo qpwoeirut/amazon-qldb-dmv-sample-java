@@ -155,7 +155,7 @@ class QldbRevision @JsonCreator constructor(
                 val hash = ionStruct["hash"] as IonBlob
                 val metadataStruct = ionStruct["metadata"] as IonStruct
                 val data = ionStruct["data"] as IonStruct
-                require(!(hash == null || data == null)) { "Document is missing required fields" }
+                // require(!(hash == null || data == null)) { "Document is missing required fields" }
                 verifyRevisionHash(metadataStruct, data, hash.bytes)
                 val metadata = RevisionMetadata.fromIon(metadataStruct)
                 QldbRevision(blockAddress, metadata, hash.bytes, data)

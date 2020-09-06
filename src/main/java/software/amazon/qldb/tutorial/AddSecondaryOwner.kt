@@ -49,7 +49,7 @@ object AddSecondaryOwner {
      * @throws IllegalStateException if failed to convert VIN to an [IonValue].
      */
     private fun isSecondaryOwnerForVehicle(
-        txn: TransactionExecutor, vin: String?,
+        txn: TransactionExecutor, vin: String,
         secondaryOwnerId: String
     ): Boolean {
         return try {
@@ -62,11 +62,9 @@ object AddSecondaryOwner {
                 return false
             }
             val owners = Constants.MAPPER.readValue(itr.next(), Owners::class.java)
-            if (null != owners.secondaryOwners) {
-                for (owner in owners.secondaryOwners) {
-                    if (secondaryOwnerId.equals(owner.personId, ignoreCase = true)) {
-                        return true
-                    }
+            for (owner in owners.secondaryOwners) {
+                if (secondaryOwnerId.equals(owner.personId, ignoreCase = true)) {
+                    return true
                 }
             }
             false

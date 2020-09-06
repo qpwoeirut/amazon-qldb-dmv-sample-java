@@ -108,7 +108,7 @@ class RevisionMetadata @JsonCreator constructor(
                 val version = ionStruct["version"] as IonInt
                 val txTime = ionStruct["txTime"] as IonTimestamp
                 val txId = ionStruct["txId"] as IonString
-                require(!(id == null || version == null || txTime == null || txId == null)) { "Document is missing required fields" }
+                // require(!(id == null || version == null || txTime == null || txId == null)) { "Document is missing required fields" }
                 RevisionMetadata(id.stringValue(), version.longValue(), Date(txTime.millis), txId.stringValue())
             } catch (e: ClassCastException) {
                 log.error("Failed to parse ion document")

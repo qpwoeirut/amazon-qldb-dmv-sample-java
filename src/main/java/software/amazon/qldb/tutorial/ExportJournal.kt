@@ -256,11 +256,9 @@ object ExportJournal {
                 .withRoleName(roleName)
                 .withAssumeRolePolicyDocument(ASSUME_ROLE_POLICY)
             val roleArn = iamClient.createRole(createRoleRequest).role.arn
-            var rolePolicyStatement = EXPORT_ROLE_S3_STATEMENT_TEMPLATE.replace("{bucket_name}", s3Bucket)
-            if (kmsArn != null) {
-                rolePolicyStatement =
-                    rolePolicyStatement + "," + EXPORT_ROLE_KMS_STATEMENT_TEMPLATE.replace("{kms_arn}", kmsArn)
-            }
+            val s3Statement = EXPORT_ROLE_S3_STATEMENT_TEMPLATE.replace("{bucket_name}", s3Bucket)
+            val rolePolicyStatement =
+                s3Statement + "," + EXPORT_ROLE_KMS_STATEMENT_TEMPLATE.replace("{kms_arn}", kmsArn)
             val rolePolicy = POLICY_TEMPLATE.replace("{statements}", rolePolicyStatement)
             val createPolicyResult = iamClient.createPolicy(
                 CreatePolicyRequest()

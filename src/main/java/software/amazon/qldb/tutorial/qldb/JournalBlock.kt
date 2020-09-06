@@ -149,15 +149,15 @@ class JournalBlock @JsonCreator constructor(
                 ByteBuffer.wrap(computedTransactionInfoHash).asReadOnlyBuffer()
             )
         ) { "Block transactionInfo hash is not contained in the QLDB block entries hash list." }
-        if (revisions != null) {
-            revisions.forEach(Consumer { obj: QldbRevision -> obj.verifyRevisionHash() })
-            val computedRevisionsHash = computeRevisionsHash()
-            require(
-                entriesHashSet.contains(
-                    ByteBuffer.wrap(computedRevisionsHash).asReadOnlyBuffer()
-                )
-            ) { "Block revisions list hash is not contained in the QLDB block entries hash list." }
-        }
+
+        revisions.forEach(Consumer { obj: QldbRevision -> obj.verifyRevisionHash() })
+        val computedRevisionsHash = computeRevisionsHash()
+        require(
+            entriesHashSet.contains(
+                ByteBuffer.wrap(computedRevisionsHash).asReadOnlyBuffer()
+            )
+        ) { "Block revisions list hash is not contained in the QLDB block entries hash list." }
+
         val computedEntriesHash = computeEntriesHash()
         require(
             Arrays.equals(
