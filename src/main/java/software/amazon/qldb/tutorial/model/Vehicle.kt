@@ -15,78 +15,36 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import software.amazon.qldb.tutorial.model.streams.RevisionData;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import software.amazon.qldb.tutorial.model.streams.RevisionData
 
 /**
  * Represents a vehicle, serializable to (and from) Ion.
  */
-public final class Vehicle implements RevisionData {
-    private final String vin;
-    private final String type;
-    private final int year;
-    private final String make;
-    private final String model;
-    private final String color;
+class Vehicle @JsonCreator constructor(
+    @get:JsonProperty("VIN")
+    @param:JsonProperty("VIN") val vin: String,
 
-    @JsonCreator
-    public Vehicle(@JsonProperty("VIN") final String vin,
-                   @JsonProperty("Type") final String type,
-                   @JsonProperty("Year") final int year,
-                   @JsonProperty("Make") final String make,
-                   @JsonProperty("Model") final String model,
-                   @JsonProperty("Color") final String color) {
-        this.vin = vin;
-        this.type = type;
-        this.year = year;
-        this.make = make;
-        this.model = model;
-        this.color = color;
-    }
+    @get:JsonProperty("Type")
+    @param:JsonProperty("Type") val type: String,
 
-    @JsonProperty("Color")
-    public String getColor() {
-        return color;
-    }
+    @get:JsonProperty("Year")
+    @param:JsonProperty("Year") val year: Int,
 
-    @JsonProperty("Make")
-    public String getMake() {
-        return make;
-    }
+    @get:JsonProperty("Make")
+    @param:JsonProperty("Make") val make: String,
 
-    @JsonProperty("Model")
-    public String getModel() {
-        return model;
-    }
+    @get:JsonProperty("Model")
+    @param:JsonProperty("Model") val model: String,
 
-    @JsonProperty("Type")
-    public String getType() {
-        return type;
-    }
+    @get:JsonProperty("Color")
+    @param:JsonProperty("Color") val color: String
+) : RevisionData {
 
-    @JsonProperty("VIN")
-    public String getVin() {
-        return vin;
-    }
-
-    @JsonProperty("Year")
-    public int getYear() {
-        return year;
-    }
-
-    @Override
-    public String toString() {
-        return "Vehicle{" +
-                "vin='" + vin + '\'' +
-                ", type='" + type + '\'' +
-                ", year=" + year +
-                ", make='" + make + '\'' +
-                ", model='" + model + '\'' +
-                ", color='" + color + '\'' +
-                '}';
+    override fun toString(): String {
+        return "Vehicle{vin='$vin', type='$type', year=$year, make='$make', model='$model', color='$color'}"
     }
 }

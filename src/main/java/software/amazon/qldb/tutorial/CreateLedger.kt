@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
  */
 object CreateLedger {
     val log = LoggerFactory.getLogger(CreateLedger::class.java)
-    const val LEDGER_CREATION_POLL_PERIOD_MS = 10000L
+    const val LEDGER_CREATION_POLL_PERIOD_MS = 10_000L
     var endpoint: String? = null
     var region: String? = null
 

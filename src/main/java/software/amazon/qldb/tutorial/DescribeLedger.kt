@@ -15,15 +15,11 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.model.DescribeLedgerRequest;
-import com.amazonaws.services.qldb.model.DescribeLedgerResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.amazonaws.services.qldb.model.DescribeLedgerRequest
+import com.amazonaws.services.qldb.model.DescribeLedgerResult
+import org.slf4j.LoggerFactory
 
 /**
  * Describe a QLDB ledger.
@@ -31,19 +27,16 @@ import org.slf4j.LoggerFactory;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class DescribeLedger {
-    public static AmazonQLDB client = CreateLedger.getClient();
-    public static final Logger log = LoggerFactory.getLogger(DescribeLedger.class);
+object DescribeLedger {
+    val client = CreateLedger.client
+    val log = LoggerFactory.getLogger(DescribeLedger::class.java)
 
-    private DescribeLedger() { }
-
-    public static void main(final String... args) {
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-
-            describe(Constants.LEDGER_NAME);
-
-        } catch (Exception e) {
-            log.error("Unable to describe a ledger!", e);
+            describe(Constants.LEDGER_NAME)
+        } catch (e: Exception) {
+            log.error("Unable to describe a ledger!", e)
         }
     }
 
@@ -51,14 +44,14 @@ public final class DescribeLedger {
      * Describe a ledger.
      *
      * @param name
-     *              Name of the ledger to describe.
-     * @return {@link DescribeLedgerResult} from QLDB.
+     * Name of the ledger to describe.
+     * @return [DescribeLedgerResult] from QLDB.
      */
-    public static DescribeLedgerResult describe(final String name) {
-        log.info("Let's describe ledger with name: {}...", name);
-        DescribeLedgerRequest request = new DescribeLedgerRequest().withName(name);
-        DescribeLedgerResult result = client.describeLedger(request);
-        log.info("Success. Ledger description: {}", result);
-        return result;
+    fun describe(name: String?): DescribeLedgerResult {
+        log.info("Let's describe ledger with name: {}...", name)
+        val request = DescribeLedgerRequest().withName(name)
+        val result = client.describeLedger(request)
+        log.info("Success. Ledger description: {}", result)
+        return result
     }
 }

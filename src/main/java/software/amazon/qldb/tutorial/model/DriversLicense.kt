@@ -15,79 +15,42 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import software.amazon.qldb.tutorial.model.streams.RevisionData;
-
-import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import software.amazon.qldb.tutorial.model.streams.RevisionData
+import java.time.LocalDate
 
 /**
  * Represents a driver's license, serializable to (and from) Ion.
  */
-public final class DriversLicense implements RevisionData {
-    private final String personId;
-    private final String licenseNumber;
-    private final String licenseType;
+class DriversLicense @JsonCreator constructor(
+    @get:JsonProperty("PersonId")
+    @param:JsonProperty("PersonId") val personId: String,
+    @get:JsonProperty("LicenseNumber")
+    @param:JsonProperty("LicenseNumber") val licenseNumber: String,
+    @get:JsonProperty("LicenseType")
+    @param:JsonProperty("LicenseType") val licenseType: String,
+    @field:JsonDeserialize(using = IonLocalDateDeserializer::class) @field:JsonSerialize(using = IonLocalDateSerializer::class) @get:JsonProperty(
+        "ValidFromDate"
+    )
+    @param:JsonProperty("ValidFromDate") val validFromDate: LocalDate,
+    @field:JsonDeserialize(using = IonLocalDateDeserializer::class) @field:JsonSerialize(using = IonLocalDateSerializer::class) @get:JsonProperty(
+        "ValidToDate"
+    )
+    @param:JsonProperty("ValidToDate") val validToDate: LocalDate
+) : RevisionData {
 
-    @JsonSerialize(using = IonLocalDateSerializer.class)
-    @JsonDeserialize(using = IonLocalDateDeserializer.class)
-    private final LocalDate validFromDate;
-
-    @JsonSerialize(using = IonLocalDateSerializer.class)
-    @JsonDeserialize(using = IonLocalDateDeserializer.class)
-    private final LocalDate validToDate;
-
-    @JsonCreator
-    public DriversLicense(@JsonProperty("PersonId") final String personId,
-                          @JsonProperty("LicenseNumber") final String licenseNumber,
-                          @JsonProperty("LicenseType") final String licenseType,
-                          @JsonProperty("ValidFromDate") final LocalDate validFromDate,
-                          @JsonProperty("ValidToDate") final LocalDate validToDate) {
-        this.personId = personId;
-        this.licenseNumber = licenseNumber;
-        this.licenseType = licenseType;
-        this.validFromDate = validFromDate;
-        this.validToDate = validToDate;
-    }
-
-    @JsonProperty("PersonId")
-    public String getPersonId() {
-        return personId;
-    }
-
-    @JsonProperty("LicenseNumber")
-    public String getLicenseNumber() {
-        return licenseNumber;
-    }
-
-    @JsonProperty("LicenseType")
-    public String getLicenseType() {
-        return licenseType;
-    }
-
-    @JsonProperty("ValidFromDate")
-    public LocalDate getValidFromDate() {
-        return  validFromDate;
-    }
-
-    @JsonProperty("ValidToDate")
-    public LocalDate getValidToDate() {
-        return  validToDate;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "DriversLicense{" +
                 "personId='" + personId + '\'' +
                 ", licenseNumber='" + licenseNumber + '\'' +
                 ", licenseType='" + licenseType + '\'' +
                 ", validFromDate=" + validFromDate +
                 ", validToDate=" + validToDate +
-                '}';
+                '}'
     }
 }

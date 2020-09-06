@@ -15,30 +15,23 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.amazon.ion.Timestamp;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
-import com.fasterxml.jackson.dataformat.ion.IonGenerator;
-
-import java.io.IOException;
-import java.time.LocalDate;
+import com.amazon.ion.Timestamp
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer
+import com.fasterxml.jackson.dataformat.ion.IonGenerator
+import java.io.IOException
+import java.time.LocalDate
 
 /**
  * Serializes [java.time.LocalDate] to Ion.
  */
-public class IonLocalDateSerializer extends StdScalarSerializer<LocalDate> {
-
-    public IonLocalDateSerializer() {
-        super(LocalDate.class);
-    }
-
-    @Override
-    public void serialize(LocalDate date, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        Timestamp timestamp = Timestamp.forDay(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
-        ((IonGenerator) jsonGenerator).writeValue(timestamp);
+class IonLocalDateSerializer : StdScalarSerializer<LocalDate>(LocalDate::class.java) {
+    @Throws(IOException::class)
+    override fun serialize(date: LocalDate, jsonGenerator: JsonGenerator, serializerProvider: SerializerProvider) {
+        val timestamp = Timestamp.forDay(date.year, date.monthValue, date.dayOfMonth)
+        (jsonGenerator as IonGenerator).writeValue(timestamp)
     }
 }

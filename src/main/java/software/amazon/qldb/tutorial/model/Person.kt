@@ -15,101 +15,59 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import java.time.LocalDate;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import software.amazon.qldb.TransactionExecutor;
-import software.amazon.qldb.tutorial.Constants;
-import software.amazon.qldb.tutorial.model.streams.RevisionData;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.Constants
+import software.amazon.qldb.tutorial.model.streams.RevisionData
+import java.time.LocalDate
 
 /**
  * Represents a person, serializable to (and from) Ion.
- */ 
-public final class Person implements RevisionData {
-    private final String firstName;
-    private final String lastName;
+ */
+class Person @JsonCreator constructor(
+    @get:JsonProperty("FirstName")
+    @param:JsonProperty("FirstName") val firstName: String,
 
-    @JsonSerialize(using = IonLocalDateSerializer.class)
-    @JsonDeserialize(using = IonLocalDateDeserializer.class)
-    private final LocalDate dob;
-    private final String govId;
-    private final String govIdType;
-    private final String address;
+    @get:JsonProperty("LastName")
+    @param:JsonProperty("LastName") val lastName: String,
 
-    @JsonCreator
-    public Person(@JsonProperty("FirstName") final String firstName,
-                  @JsonProperty("LastName") final String lastName,
-                  @JsonProperty("DOB") final LocalDate dob,
-                  @JsonProperty("GovId") final String govId,
-                  @JsonProperty("GovIdType") final String govIdType,
-                  @JsonProperty("Address") final String address) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.dob = dob;
-        this.govId = govId;
-        this.govIdType = govIdType;
-        this.address = address;
+    @field:JsonDeserialize(using = IonLocalDateDeserializer::class)
+    @field:JsonSerialize(using = IonLocalDateSerializer::class)
+    @get:JsonProperty("DOB")
+    @param:JsonProperty("DOB") val dob: LocalDate,
+
+    @get:JsonProperty("GovId")
+    @param:JsonProperty("GovId") val govId: String,
+
+    @get:JsonProperty("GovIdType")
+    @param:JsonProperty("GovIdType") val govIdType: String,
+
+    @get:JsonProperty("Address")
+    @param:JsonProperty("Address") val address: String
+) : RevisionData {
+
+    override fun toString(): String {
+        return "Person{firstName='$firstName', lastName='$lastName', dob=$dob, govId='$govId', govIdType='$govIdType', address='$address'}"
     }
 
-    @JsonProperty("Address")
-    public String getAddress() {
-        return address;
-    }
-
-    @JsonProperty("DOB")
-    public LocalDate getDob() {
-        return dob;
-    }
-
-    @JsonProperty("FirstName")
-    public String getFirstName() {
-        return firstName;
-    }
-
-    @JsonProperty("LastName")
-    public String getLastName() {
-        return lastName;
-    }
-
-    @JsonProperty("GovId")
-    public String getGovId() {
-        return govId;
-    }
-
-    @JsonProperty("GovIdType")
-    public String getGovIdType() {
-        return govIdType;
-    }
-
-    /**
-     * This returns the unique document ID given a specific government ID.
-     *
-     * @param txn
-     *              A transaction executor object.
-     * @param govId
-     *              The government ID of a driver.
-     * @return the unique document ID.
-     */
-    public static String getDocumentIdByGovId(final TransactionExecutor txn, final String govId) {
-        return SampleData.getDocumentId(txn, Constants.PERSON_TABLE_NAME, "GovId", govId);
-    }
-
-    @Override
-    public String toString() {
-        return "Person{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", dob=" + dob +
-                ", govId='" + govId + '\'' +
-                ", govIdType='" + govIdType + '\'' +
-                ", address='" + address + '\'' +
-                '}';
+    companion object {
+        /**
+         * This returns the unique document ID given a specific government ID.
+         *
+         * @param txn
+         * A transaction executor object.
+         * @param govId
+         * The government ID of a driver.
+         * @return the unique document ID.
+         */
+        @JvmStatic
+        fun getDocumentIdByGovId(txn: TransactionExecutor, govId: String): String {
+            return SampleData.getDocumentId(txn, Constants.PERSON_TABLE_NAME, "GovId", govId)
+        }
     }
 }

@@ -41,8 +41,8 @@ object ConnectToLedger {
     val ledgerName = Constants.LEDGER_NAME
     val region: String? = null
 
+    @get:JvmStatic
     var driver: QldbDriver = createQldbDriver()
-        @JvmStatic get
 
     /**
      * Create a pooled driver for creating sessions.

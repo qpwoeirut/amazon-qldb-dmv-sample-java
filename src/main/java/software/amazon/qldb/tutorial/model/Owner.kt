@@ -15,30 +15,18 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Represents a vehicle owner, serializable to (and from) Ion.
- */ 
-public final class Owner {
-    private final String personId;
-
-    public Owner(@JsonProperty("PersonId") final String personId) {
-        this.personId = personId;
-    }
-
-    @JsonProperty("PersonId")
-    public String getPersonId() {
-        return personId;
-    }
-
-    @Override
-    public String toString() {
-        return "Owner{" +
-                "personId='" + personId + '\'' +
-                '}';
+ */
+class Owner(
+    @get:JsonProperty("PersonId")
+    @param:JsonProperty("PersonId") val personId: String
+) {
+    override fun toString(): String {
+        return "Owner{personId='$personId'}"
     }
 }

@@ -15,28 +15,25 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.amazon.ion.Timestamp;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-
-import java.io.IOException;
-import java.time.LocalDate;
+import com.amazon.ion.Timestamp
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import java.io.IOException
+import java.time.LocalDate
 
 /**
  * Deserializes [java.time.LocalDate] from Ion.
  */
-public class IonLocalDateDeserializer extends JsonDeserializer<LocalDate> {
-
-    @Override
-    public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-        return timestampToLocalDate((Timestamp) jp.getEmbeddedObject());
+class IonLocalDateDeserializer : JsonDeserializer<LocalDate>() {
+    @Throws(IOException::class)
+    override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): LocalDate {
+        return timestampToLocalDate(jp.embeddedObject as Timestamp)
     }
 
-    private LocalDate timestampToLocalDate(Timestamp timestamp) {
-        return LocalDate.of(timestamp.getYear(), timestamp.getMonth(), timestamp.getDay());
+    private fun timestampToLocalDate(timestamp: Timestamp): LocalDate {
+        return LocalDate.of(timestamp.year, timestamp.month, timestamp.day)
     }
 }

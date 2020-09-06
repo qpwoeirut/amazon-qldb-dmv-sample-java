@@ -15,16 +15,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.model.DeleteLedgerRequest;
-import com.amazonaws.services.qldb.model.DeleteLedgerResult;
-import com.amazonaws.services.qldb.model.ResourceNotFoundException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.amazonaws.services.qldb.model.DeleteLedgerRequest
+import com.amazonaws.services.qldb.model.DeleteLedgerResult
+import com.amazonaws.services.qldb.model.ResourceNotFoundException
+import org.slf4j.LoggerFactory
 
 /**
  * Delete a ledger.
@@ -32,24 +28,21 @@ import org.slf4j.LoggerFactory;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class DeleteLedger {
-    public static final Logger log = LoggerFactory.getLogger(DeleteLedger.class);
-    public static final Long LEDGER_DELETION_POLL_PERIOD_MS = 20_000L;
-    public static AmazonQLDB client = CreateLedger.getClient();
+object DeleteLedger {
+    val log = LoggerFactory.getLogger(DeleteLedger::class.java)
+    const val LEDGER_DELETION_POLL_PERIOD_MS = 20_000L
+    val client = CreateLedger.client
 
-    private DeleteLedger() { }
-
-    public static void main(String... args) throws Exception {
+    @Throws(Exception::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-            DeletionProtection.setDeletionProtection(Constants.LEDGER_NAME, false);
-
-            delete(Constants.LEDGER_NAME);
-
-            waitForDeleted(Constants.LEDGER_NAME);
-
-        } catch (Exception e) {
-            log.error("Unable to delete the ledger.", e);
-            throw e;
+            DeletionProtection.setDeletionProtection(Constants.LEDGER_NAME, false)
+            delete(Constants.LEDGER_NAME)
+            waitForDeleted(Constants.LEDGER_NAME)
+        } catch (e: Exception) {
+            log.error("Unable to delete the ledger.", e)
+            throw e
         }
     }
 
@@ -58,34 +51,37 @@ public final class DeleteLedger {
      * Disables deletion protection before sending the deletion request.
      *
      * @param ledgerName
-     *              Name of the ledger to be deleted.
+     * Name of the ledger to be deleted.
      * @return DeleteLedgerResult.
      */
-    public static DeleteLedgerResult delete(final String ledgerName) {
-        log.info("Attempting to delete the ledger with name: {}...", ledgerName);
-        DeleteLedgerRequest request = new DeleteLedgerRequest().withName(ledgerName);
-        DeleteLedgerResult result = client.deleteLedger(request);
-        log.info("Success.");
-        return result;
+    @JvmStatic
+    fun delete(ledgerName: String?): DeleteLedgerResult {
+        log.info("Attempting to delete the ledger with name: {}...", ledgerName)
+        val request = DeleteLedgerRequest().withName(ledgerName)
+        val result = client.deleteLedger(request)
+        log.info("Success.")
+        return result
     }
 
     /**
      * Wait for the ledger to be deleted.
      *
      * @param ledgerName
-     *              Name of the ledger being deleted.
+     * Name of the ledger being deleted.
      * @throws InterruptedException if thread is being interrupted.
      */
-    public static void waitForDeleted(final String ledgerName) throws InterruptedException {
-        log.info("Waiting for the ledger to be deleted...");
+    @JvmStatic
+    @Throws(InterruptedException::class)
+    fun waitForDeleted(ledgerName: String?) {
+        log.info("Waiting for the ledger to be deleted...")
         while (true) {
             try {
-                DescribeLedger.describe(ledgerName);
-                log.info("The ledger is still being deleted. Please wait...");
-                Thread.sleep(LEDGER_DELETION_POLL_PERIOD_MS);
-            } catch (ResourceNotFoundException ex) {
-                log.info("Success. The ledger is deleted.");
-                break;
+                DescribeLedger.describe(ledgerName)
+                log.info("The ledger is still being deleted. Please wait...")
+                Thread.sleep(LEDGER_DELETION_POLL_PERIOD_MS)
+            } catch (ex: ResourceNotFoundException) {
+                log.info("Success. The ledger is deleted.")
+                break
             }
         }
     }

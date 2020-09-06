@@ -15,112 +15,46 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import software.amazon.qldb.TransactionExecutor;
-import software.amazon.qldb.tutorial.Constants;
-import software.amazon.qldb.tutorial.model.streams.RevisionData;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.Constants
+import software.amazon.qldb.tutorial.model.SampleData.getDocumentId
+import software.amazon.qldb.tutorial.model.streams.RevisionData
+import java.math.BigDecimal
+import java.time.LocalDate
 
 /**
  * Represents a vehicle registration, serializable to (and from) Ion.
- */ 
-public final class VehicleRegistration implements RevisionData {
+ */
+class VehicleRegistration @JsonCreator constructor(
+    @get:JsonProperty("VIN")
+    @param:JsonProperty("VIN") val vin: String,
+    @get:JsonProperty("LicensePlateNumber")
+    @param:JsonProperty("LicensePlateNumber") val licensePlateNumber: String,
+    @get:JsonProperty("State")
+    @param:JsonProperty("State") val state: String,
+    @get:JsonProperty("City")
+    @param:JsonProperty("City") val city: String,
+    @get:JsonProperty("PendingPenaltyTicketAmount")
+    @param:JsonProperty("PendingPenaltyTicketAmount") val pendingPenaltyTicketAmount: BigDecimal,
+    @get:JsonProperty("ValidFromDate")
+    @get:JsonSerialize(using = IonLocalDateSerializer::class)
+    @get:JsonDeserialize(using = IonLocalDateDeserializer::class)
+    @param:JsonProperty("ValidFromDate") val validFromDate: LocalDate,
+    @get:JsonProperty("ValidToDate")
+    @get:JsonSerialize(using = IonLocalDateSerializer::class)
+    @get:JsonDeserialize(using = IonLocalDateDeserializer::class)
+    @param:JsonProperty("ValidToDate") val validToDate: LocalDate,
+    @get:JsonProperty("Owners")
+    @param:JsonProperty("Owners") val owners: Owners
+) : RevisionData {
 
-    private final String vin;
-    private final String licensePlateNumber;
-    private final String state;
-    private final String city;
-    private final BigDecimal pendingPenaltyTicketAmount;
-    private final LocalDate validFromDate;
-    private final LocalDate validToDate;
-    private final Owners owners;
-
-    @JsonCreator
-    public VehicleRegistration(@JsonProperty("VIN") final String vin,
-                               @JsonProperty("LicensePlateNumber") final String licensePlateNumber,
-                               @JsonProperty("State") final String state,
-                               @JsonProperty("City") final String city,
-                               @JsonProperty("PendingPenaltyTicketAmount") final BigDecimal pendingPenaltyTicketAmount,
-                               @JsonProperty("ValidFromDate") final LocalDate validFromDate,
-                               @JsonProperty("ValidToDate") final LocalDate validToDate,
-                               @JsonProperty("Owners") final Owners owners) {
-        this.vin = vin;
-        this.licensePlateNumber = licensePlateNumber;
-        this.state = state;
-        this.city = city;
-        this.pendingPenaltyTicketAmount = pendingPenaltyTicketAmount;
-        this.validFromDate = validFromDate;
-        this.validToDate = validToDate;
-        this.owners = owners;
-    }
-
-    @JsonProperty("City")
-    public String getCity() {
-        return city;
-    }
-
-    @JsonProperty("LicensePlateNumber")
-    public String getLicensePlateNumber() {
-        return licensePlateNumber;
-    }
-
-    @JsonProperty("Owners")
-    public Owners getOwners() {
-        return owners;
-    }
-
-    @JsonProperty("PendingPenaltyTicketAmount")
-    public BigDecimal getPendingPenaltyTicketAmount() {
-        return pendingPenaltyTicketAmount;
-    }
-
-    @JsonProperty("State")
-    public String getState() {
-        return state;
-    }
-
-    @JsonProperty("ValidFromDate")
-    @JsonSerialize(using = IonLocalDateSerializer.class)
-    @JsonDeserialize(using = IonLocalDateDeserializer.class)
-    public LocalDate getValidFromDate() {
-        return validFromDate;
-    }
-
-    @JsonProperty("ValidToDate")
-    @JsonSerialize(using = IonLocalDateSerializer.class)
-    @JsonDeserialize(using = IonLocalDateDeserializer.class)
-    public LocalDate getValidToDate() {
-        return validToDate;
-    }
-
-    @JsonProperty("VIN")
-    public String getVin() {
-        return vin;
-    }
-
-    /**
-     * Returns the unique document ID of a vehicle given a specific VIN.
-     *
-     * @param txn
-     *              A transaction executor object.
-     * @param vin
-     *              The VIN of a vehicle.
-     * @return the unique document ID of the specified vehicle.
-     */
-    public static String getDocumentIdByVin(final TransactionExecutor txn, final String vin) {
-        return SampleData.getDocumentId(txn, Constants.VEHICLE_REGISTRATION_TABLE_NAME, "VIN", vin);
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "VehicleRegistration{" +
                 "vin='" + vin + '\'' +
                 ", licensePlateNumber='" + licensePlateNumber + '\'' +
@@ -130,6 +64,22 @@ public final class VehicleRegistration implements RevisionData {
                 ", validFromDate=" + validFromDate +
                 ", validToDate=" + validToDate +
                 ", owners=" + owners +
-                '}';
+                '}'
+    }
+
+    companion object {
+        /**
+         * Returns the unique document ID of a vehicle given a specific VIN.
+         *
+         * @param txn
+         * A transaction executor object.
+         * @param vin
+         * The VIN of a vehicle.
+         * @return the unique document ID of the specified vehicle.
+         */
+        @JvmStatic
+        fun getDocumentIdByVin(txn: TransactionExecutor?, vin: String?): String {
+            return getDocumentId(txn!!, Constants.VEHICLE_REGISTRATION_TABLE_NAME, "VIN", vin!!)
+        }
     }
 }

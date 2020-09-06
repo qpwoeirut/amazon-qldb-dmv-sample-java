@@ -15,41 +15,21 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model
 
-package software.amazon.qldb.tutorial.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Represents a set of owners for a given vehicle, serializable to (and from) Ion.
- */ 
-public final class Owners {
-    private final Owner primaryOwner;
-    private final List<Owner> secondaryOwners;
+ */
+class Owners(
+    @get:JsonProperty("PrimaryOwner")
+    @param:JsonProperty("PrimaryOwner") val primaryOwner: Owner,
+    @get:JsonProperty("SecondaryOwners")
+    @param:JsonProperty("SecondaryOwners") val secondaryOwners: List<Owner>
+) {
 
-    public Owners(@JsonProperty("PrimaryOwner") final Owner primaryOwner,
-                  @JsonProperty("SecondaryOwners") final List<Owner> secondaryOwners) {
-        this.primaryOwner = primaryOwner;
-        this.secondaryOwners = secondaryOwners;
-    }
-
-    @JsonProperty("PrimaryOwner")
-    public Owner getPrimaryOwner() {
-        return primaryOwner;
-    }
-
-    @JsonProperty("SecondaryOwners")
-    public List<Owner> getSecondaryOwners() {
-        return secondaryOwners;
-    }
-
-    @Override
-    public String toString() {
-        return "Owners{" +
-                "primaryOwner=" + primaryOwner +
-                ", secondaryOwners=" + secondaryOwners +
-                '}';
+    override fun toString(): String {
+        return "Owners{primaryOwner=$primaryOwner, secondaryOwners=$secondaryOwners}"
     }
 }
