@@ -15,22 +15,15 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.AmazonQLDBClientBuilder;
-import com.amazonaws.services.qldb.model.JournalS3ExportDescription;
-import com.amazonaws.services.qldb.model.ListJournalS3ExportsForLedgerRequest;
-import com.amazonaws.services.qldb.model.ListJournalS3ExportsForLedgerResult;
-import com.amazonaws.services.qldb.model.ListJournalS3ExportsRequest;
-import com.amazonaws.services.qldb.model.ListJournalS3ExportsResult;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.amazonaws.services.qldb.AmazonQLDB
+import com.amazonaws.services.qldb.AmazonQLDBClientBuilder
+import com.amazonaws.services.qldb.model.JournalS3ExportDescription
+import com.amazonaws.services.qldb.model.ListJournalS3ExportsForLedgerRequest
+import com.amazonaws.services.qldb.model.ListJournalS3ExportsRequest
+import org.slf4j.LoggerFactory
+import java.util.*
 
 /**
  * List the journal exports of a given QLDB ledger.
@@ -38,91 +31,81 @@ import org.slf4j.LoggerFactory;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class ListJournalExports {
-    public static AmazonQLDB client = getClient();
-    public static final Logger log = LoggerFactory.getLogger(DescribeJournalExport.class);
-
-    private ListJournalExports() { }
-
-    public static AmazonQLDB getClient() {
-        return AmazonQLDBClientBuilder.standard().build();
-    }
+object ListJournalExports {
+    val log = LoggerFactory.getLogger(DescribeJournalExport::class.java)
+    val client: AmazonQLDB = AmazonQLDBClientBuilder.standard().build()
 
     /**
      * List all journal exports for the given ledger.
      *
      * @param name
-     *              The name of the ledger.
-     * @return a list of {@link JournalS3ExportDescription}.
+     * The name of the ledger.
+     * @return a list of [JournalS3ExportDescription].
      */
-    public static List<JournalS3ExportDescription> listExports(final String name) {
-        log.info("Let's list journal exports for the ledger with name: {}...", name);
-
-        List<JournalS3ExportDescription> exportDescriptions = new ArrayList<>();
-        String nextToken = null;
+    fun listExports(name: String): List<JournalS3ExportDescription> {
+        log.info("Let's list journal exports for the ledger with name: $name...")
+        val exportDescriptions: MutableList<JournalS3ExportDescription> = ArrayList()
+        var nextToken: String? = null
         do {
-            ListJournalS3ExportsForLedgerRequest request = new ListJournalS3ExportsForLedgerRequest()
-                    .withName(name)
-                    .withNextToken(nextToken);
-            ListJournalS3ExportsForLedgerResult result = client.listJournalS3ExportsForLedger(request);
-            exportDescriptions.addAll(result.getJournalS3Exports());
-            nextToken = result.getNextToken();
-        } while (nextToken != null);
-
-        log.info("Success. List of journal exports: {}", exportDescriptions);
-        return exportDescriptions;
+            val request = ListJournalS3ExportsForLedgerRequest()
+                .withName(name)
+                .withNextToken(nextToken)
+            val result = client.listJournalS3ExportsForLedger(request)
+            exportDescriptions.addAll(result.journalS3Exports)
+            nextToken = result.nextToken
+        } while (nextToken != null)
+        log.info("Success. List of journal exports: $exportDescriptions")
+        return exportDescriptions
     }
 
     /**
-     *List all journal exports for the given ledger and nextToken.
+     * List all journal exports for the given ledger and nextToken.
      *
      * @param name
-     *              The name of the ledger.
+     * The name of the ledger.
      * @param nextToken
-     *              The next token to provide in the service call.
-     * @return a list of {@link JournalS3ExportDescription}.
+     * The next token to provide in the service call.
+     * @return a list of [JournalS3ExportDescription].
      */
-    public static List<JournalS3ExportDescription> listExports(final String name, final String nextToken) {
-        log.info("Let's list journal exports for the ledger with name: {}, nextToken: {}...", name, nextToken);
-
-        ListJournalS3ExportsForLedgerRequest request = new ListJournalS3ExportsForLedgerRequest()
-                .withName(name)
-                .withNextToken(nextToken);
-        ListJournalS3ExportsForLedgerResult result = client.listJournalS3ExportsForLedger(request);
-        List<JournalS3ExportDescription> exportDescriptions = result.getJournalS3Exports();
-
-        log.info("Success. List of journal exports: {}", exportDescriptions);
-        return exportDescriptions;
+    fun listExports(name: String, nextToken: String): List<JournalS3ExportDescription> {
+        log.info("Let's list journal exports for the ledger with name: {}, nextToken: {}...", name, nextToken)
+        val request = ListJournalS3ExportsForLedgerRequest()
+            .withName(name)
+            .withNextToken(nextToken)
+        val result = client.listJournalS3ExportsForLedger(request)
+        val exportDescriptions = result.journalS3Exports
+        log.info("Success. List of journal exports: {}", exportDescriptions)
+        return exportDescriptions
     }
 
     /**
      * List all journal exports for an AWS account.
      *
-     * @return a list of {@link JournalS3ExportDescription}.
+     * @return a list of [JournalS3ExportDescription].
      */
-    public static List<JournalS3ExportDescription> listExports() {
-        log.info("Let's list journal exports for the AWS account.");
-
-        List<JournalS3ExportDescription> exportDescriptions = new ArrayList<>();
-        String nextToken = null;
+    fun listExports(): List<JournalS3ExportDescription> {
+        log.info("Let's list journal exports for the AWS account.")
+        val exportDescriptions: MutableList<JournalS3ExportDescription> = ArrayList()
+        var nextToken: String? = null
         do {
-            ListJournalS3ExportsRequest request = new ListJournalS3ExportsRequest()
-                    .withNextToken(nextToken);
-            ListJournalS3ExportsResult result = client.listJournalS3Exports(request);
-            exportDescriptions.addAll(result.getJournalS3Exports());
-            nextToken = result.getNextToken();
-        } while (nextToken != null);
-
-        log.info("Success. List of journal exports: {}", exportDescriptions);
-        return exportDescriptions;
+            val request = ListJournalS3ExportsRequest()
+                .withNextToken(nextToken)
+            val result = client.listJournalS3Exports(request)
+            exportDescriptions.addAll(result.journalS3Exports)
+            nextToken = result.nextToken
+        } while (nextToken != null)
+        log.info("Success. List of journal exports: {}", exportDescriptions)
+        return exportDescriptions
     }
 
-    public static void main(final String... args) throws Exception {
+    @Throws(Exception::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-            listExports(Constants.LEDGER_NAME);
-        } catch (Exception e) {
-            log.error("Unable to list exports!", e);
-            throw e;
+            listExports(Constants.LEDGER_NAME)
+        } catch (e: Exception) {
+            log.error("Unable to list exports!", e)
+            throw e
         }
     }
 }

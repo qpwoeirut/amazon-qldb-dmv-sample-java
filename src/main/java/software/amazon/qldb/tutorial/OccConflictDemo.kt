@@ -15,17 +15,16 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazon.ion.IonValue;
-import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.services.qldbsession.model.OccConflictException;
-import software.amazon.qldb.QldbDriver;
-import software.amazon.qldb.RetryPolicy;
-import software.amazon.qldb.tutorial.model.SampleData;
+import org.slf4j.LoggerFactory
+import software.amazon.awssdk.services.qldbsession.model.OccConflictException
+import software.amazon.qldb.QldbDriver
+import software.amazon.qldb.RetryPolicy
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.ConnectToLedger.amazonQldbSessionClientBuilder
+import software.amazon.qldb.tutorial.model.SampleData
+import java.io.IOException
 
 /**
  * Demonstrates how to handle OCC conflicts, where two users try to execute and commit changes to the same document.
@@ -35,20 +34,19 @@ import software.amazon.qldb.tutorial.model.SampleData;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class OccConflictDemo {
-    public static final Logger log = LoggerFactory.getLogger(OccConflictDemo.class);
+object OccConflictDemo {
+    val log = LoggerFactory.getLogger(OccConflictDemo::class.java)
 
-    private OccConflictDemo() { }
-
-    public static void main(final String... args) throws IOException {
-        final String vehicleId1 = SampleData.REGISTRATIONS.get(0).getVin();
-        final IonValue ionVin = Constants.MAPPER.writeValueAsIonValue(vehicleId1);
-
-        QldbDriver driver = QldbDriver.builder()
-                                              .ledger(Constants.LEDGER_NAME)
-                                              .transactionRetryPolicy(RetryPolicy.none())
-                                              .sessionClientBuilder(ConnectToLedger.getAmazonQldbSessionClientBuilder())
-                                              .build();
+    @Throws(IOException::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val vehicleId1 = SampleData.REGISTRATIONS[0].vin
+        val ionVin = Constants.MAPPER.writeValueAsIonValue(vehicleId1)
+        val driver = QldbDriver.builder()
+            .ledger(Constants.LEDGER_NAME)
+            .transactionRetryPolicy(RetryPolicy.none())
+            .sessionClientBuilder(amazonQldbSessionClientBuilder)
+            .build()
 
         /*
          * ⚠️Warning⚠️: Running a transaction inside another transaction that access the same document
@@ -59,26 +57,34 @@ public final class OccConflictDemo {
          * the transaction.
          */
         try {
-            log.info("Starting outer transaction");
-            driver.execute(txn -> {
-                txn.execute("UPDATE VehicleRegistration AS r SET r.City = 'Tukwila' WHERE r.VIN = ?",
-                            ionVin);
-                txn.execute("SELECT * FROM VehicleRegistration AS r WHERE r.VIN = ?",
-                            ionVin);
-
-                driver.execute(txn2 -> {
-                    log.info("Starting inner transaction");
-                    txn2.execute("UPDATE VehicleRegistration AS r SET r.City = 'Tukwila' WHERE r.VIN = ?",
-                                ionVin);
-                    txn2.execute("SELECT * FROM VehicleRegistration AS r WHERE r.VIN = ?",
-                                ionVin);
-                });
-                log.info("Inner transaction succeeded and the Vehicle with VIN {} was updated", vehicleId1);
-            });
-        } catch (OccConflictException e) {
-            log.error("Optimistic Concurrency Control Exception. One of the threads tried to commit the transaction that used"
-                     + "the same "
-                     + "thread already.");
+            log.info("Starting outer transaction")
+            driver.execute { txn: TransactionExecutor ->
+                txn.execute(
+                    "UPDATE VehicleRegistration AS r SET r.City = 'Tukwila' WHERE r.VIN = ?",
+                    ionVin
+                )
+                txn.execute(
+                    "SELECT * FROM VehicleRegistration AS r WHERE r.VIN = ?",
+                    ionVin
+                )
+                driver.execute { txn2: TransactionExecutor ->
+                    log.info("Starting inner transaction")
+                    txn2.execute(
+                        "UPDATE VehicleRegistration AS r SET r.City = 'Tukwila' WHERE r.VIN = ?",
+                        ionVin
+                    )
+                    txn2.execute(
+                        "SELECT * FROM VehicleRegistration AS r WHERE r.VIN = ?",
+                        ionVin
+                    )
+                }
+                log.info("Inner transaction succeeded and the Vehicle with VIN {} was updated", vehicleId1)
+            }
+        } catch (e: OccConflictException) {
+            log.error(
+                "Optimistic Concurrency Control Exception. One of the threads tried to commit the transaction that used"
+                        + "the same thread already."
+            )
         }
     }
 }
