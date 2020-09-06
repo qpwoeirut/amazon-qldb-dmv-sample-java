@@ -139,7 +139,7 @@ object SampleData {
      */
     @JvmStatic
     @Synchronized
-    fun convertToLocalDate(date: String?): LocalDate {
+    fun convertToLocalDate(date: String): LocalDate {
         return LocalDate.parse(date, DATE_TIME_FORMAT)
     }
 
@@ -171,8 +171,8 @@ object SampleData {
      */
     @JvmStatic
     fun getDocumentId(
-        txn: TransactionExecutor, tableName: String?,
-        identifier: String?, value: String
+        txn: TransactionExecutor, tableName: String,
+        identifier: String, value: String
     ): String {
         return try {
             val parameters = listOf(Constants.MAPPER.writeValueAsIonValue(value))
@@ -250,7 +250,7 @@ object SampleData {
      * @param fieldName the name of the field from which to get the value.
      * @return the String value of the field within the given [IonStruct].
      */
-    fun getStringValueOfStructField(struct: IonStruct, fieldName: String?): String {
+    fun getStringValueOfStructField(struct: IonStruct, fieldName: String): String {
         return (struct[fieldName] as IonString).stringValue()
     }
 
@@ -264,9 +264,9 @@ object SampleData {
      * @return the updated [DriversLicense].
      */
     @JvmStatic
-    fun updatePersonIdDriversLicense(oldLicense: DriversLicense, personId: String?): DriversLicense {
+    fun updatePersonIdDriversLicense(oldLicense: DriversLicense, personId: String): DriversLicense {
         return DriversLicense(
-            personId!!, oldLicense.licenseNumber, oldLicense.licenseType,
+            personId, oldLicense.licenseNumber, oldLicense.licenseType,
             oldLicense.validFromDate, oldLicense.validToDate
         )
     }

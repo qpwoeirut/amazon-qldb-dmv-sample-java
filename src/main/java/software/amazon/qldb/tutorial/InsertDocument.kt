@@ -52,9 +52,9 @@ object InsertDocument {
      */
     @JvmStatic
     fun insertDocuments(
-        txn: TransactionExecutor, tableName: String?,
-        documents: List<*>?
-    ): List<String?> {
+        txn: TransactionExecutor, tableName: String,
+        documents: List<*>
+    ): List<String> {
         log.info("Inserting some documents in the {} table...", tableName)
         return try {
             val query = String.format("INSERT INTO %s ?", tableName)
@@ -76,14 +76,14 @@ object InsertDocument {
      * List of registrations to update.
      */
     fun updatePersonId(
-        documentIds: List<String?>, licenses: MutableList<DriversLicense?>,
-        registrations: MutableList<VehicleRegistration?>
+        documentIds: List<String>, licenses: MutableList<DriversLicense>,
+        registrations: MutableList<VehicleRegistration>
     ) {
         for (i in documentIds.indices) {
             val license = SampleData.LICENSES[i]
             val registration = SampleData.REGISTRATIONS[i]
             licenses.add(updatePersonIdDriversLicense(license, documentIds[i]))
-            registrations.add(updateOwnerVehicleRegistration(registration, documentIds[i]!!))
+            registrations.add(updateOwnerVehicleRegistration(registration, documentIds[i]))
         }
     }
 
@@ -94,8 +94,8 @@ object InsertDocument {
 
     @JvmStatic
     fun main() {
-        val newDriversLicenses: MutableList<DriversLicense?> = ArrayList()
-        val newVehicleRegistrations: MutableList<VehicleRegistration?> = ArrayList()
+        val newDriversLicenses: MutableList<DriversLicense> = ArrayList()
+        val newVehicleRegistrations: MutableList<VehicleRegistration> = ArrayList()
         driver.execute { txn: TransactionExecutor ->
             val documentIds = insertDocuments(txn, Constants.PERSON_TABLE_NAME, SampleData.PEOPLE)
             updatePersonId(documentIds, newDriversLicenses, newVehicleRegistrations)

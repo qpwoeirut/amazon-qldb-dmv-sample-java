@@ -41,7 +41,7 @@ object CreateTable {
      * @return the number of tables created.
      */
     @JvmStatic
-    fun createTable(txn: TransactionExecutor, tableName: String?): Int {
+    fun createTable(txn: TransactionExecutor, tableName: String): Int {
         log.info("Creating the '{}' table...", tableName)
         val createTable = String.format("CREATE TABLE %s", tableName)
         val result = txn.execute(createTable)

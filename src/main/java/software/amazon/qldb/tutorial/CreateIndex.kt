@@ -42,7 +42,7 @@ object CreateIndex {
      * The index attribute to use.
      * @return the number of tables created.
      */
-    fun createIndex(txn: TransactionExecutor, tableName: String?, indexAttribute: String?): Int {
+    fun createIndex(txn: TransactionExecutor, tableName: String, indexAttribute: String): Int {
         log.info("Creating an index on {}...", indexAttribute)
         val createIndex = String.format("CREATE INDEX ON %s (%s)", tableName, indexAttribute)
         val r = txn.execute(createIndex)

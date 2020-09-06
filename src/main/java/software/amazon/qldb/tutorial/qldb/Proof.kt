@@ -40,7 +40,7 @@ class Proof(val internalHashes: List<ByteArray>) {
          * @throws IllegalStateException if failed to parse the [Proof] object from the given ion text.
          */
         @JvmStatic
-        fun fromBlob(ionText: String?): Proof {
+        fun fromBlob(ionText: String): Proof {
             return try {
                 val reader: IonReader = SYSTEM.newReader(ionText)
                 val list: MutableList<ByteArray> = ArrayList()

@@ -41,7 +41,7 @@ object DeregisterDriversLicense {
      * License number of the driver's license to de-register.
      * @throws IllegalStateException if failed to convert parameter into an [IonValue].
      */
-    fun deregisterDriversLicense(txn: TransactionExecutor, licenseNumber: String?) {
+    fun deregisterDriversLicense(txn: TransactionExecutor, licenseNumber: String) {
         try {
             log.info("De-registering license with license number: {}...", licenseNumber)
             val query = "DELETE FROM DriversLicense AS d WHERE d.LicenseNumber = ?"

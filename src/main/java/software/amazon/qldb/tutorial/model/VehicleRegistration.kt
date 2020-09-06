@@ -55,16 +55,16 @@ class VehicleRegistration @JsonCreator constructor(
 ) : RevisionData {
 
     override fun toString(): String {
-        return "VehicleRegistration{" +
-                "vin='" + vin + '\'' +
-                ", licensePlateNumber='" + licensePlateNumber + '\'' +
-                ", state='" + state + '\'' +
-                ", city='" + city + '\'' +
-                ", pendingPenaltyTicketAmount=" + pendingPenaltyTicketAmount +
-                ", validFromDate=" + validFromDate +
-                ", validToDate=" + validToDate +
-                ", owners=" + owners +
-                '}'
+        return """VehicleRegistration{
+                |vin='$vin', 
+                |licensePlateNumber='$licensePlateNumber', 
+                |state='$state', 
+                |city='$city', 
+                |pendingPenaltyTicketAmount=$pendingPenaltyTicketAmount, 
+                |validFromDate=$validFromDate, 
+                |validToDate=$validToDate, 
+                |owners=$owners
+                |}""".trimMargin()
     }
 
     companion object {
@@ -78,8 +78,8 @@ class VehicleRegistration @JsonCreator constructor(
          * @return the unique document ID of the specified vehicle.
          */
         @JvmStatic
-        fun getDocumentIdByVin(txn: TransactionExecutor?, vin: String?): String {
-            return getDocumentId(txn!!, Constants.VEHICLE_REGISTRATION_TABLE_NAME, "VIN", vin!!)
+        fun getDocumentIdByVin(txn: TransactionExecutor, vin: String): String {
+            return getDocumentId(txn, Constants.VEHICLE_REGISTRATION_TABLE_NAME, "VIN", vin)
         }
     }
 }

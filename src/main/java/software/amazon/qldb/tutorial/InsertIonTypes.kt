@@ -91,7 +91,7 @@ object InsertIonTypes {
      * @param tableName
      * The name of the table to delete.
      */
-    fun deleteTable(txn: TransactionExecutor, tableName: String?) {
+    fun deleteTable(txn: TransactionExecutor, tableName: String) {
         log.info("Deleting {} table...", tableName)
         val statement = String.format("DROP TABLE %s", tableName)
         txn.execute(statement)

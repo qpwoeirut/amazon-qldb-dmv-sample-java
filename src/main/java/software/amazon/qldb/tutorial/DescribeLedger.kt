@@ -47,7 +47,7 @@ object DescribeLedger {
      * Name of the ledger to describe.
      * @return [DescribeLedgerResult] from QLDB.
      */
-    fun describe(name: String?): DescribeLedgerResult {
+    fun describe(name: String): DescribeLedgerResult {
         log.info("Let's describe ledger with name: {}...", name)
         val request = DescribeLedgerRequest().withName(name)
         val result = client.describeLedger(request)
