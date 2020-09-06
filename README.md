@@ -1,4 +1,4 @@
-# Amazon QLDB Java DMV Sample App
+# Amazon QLDB Kotlin DMV Sample App
 
 The samples in this project demonstrate several uses of Amazon QLDB.
 
@@ -8,10 +8,10 @@ The samples in this project demonstrate several uses of Amazon QLDB.
 
 See [Accessing Amazon QLDB](https://docs.aws.amazon.com/qldb/latest/developerguide/accessing.html) for information on connecting to AWS.
 
-### Java 8 and Gradle
+### Kotlin 1.4 and Gradle
 
-The examples are written in Java 8 using the Gradle build tool. Java 8 must be installed to build the examples, however 
-the Gradle wrapper is bundled in the project and does not need to be installed. Please see the link below for more 
+The examples are written in Kotlin 1.4 using the Gradle build tool. Java 8 must be also installed to build the examples. 
+The Gradle wrapper is bundled in the project and does not need to be installed. Please see the link below for more 
 detail to install Java 8 and information on Gradle:
 
 * [Java 8 Installation](https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html)
