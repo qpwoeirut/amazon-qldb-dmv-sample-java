@@ -19,7 +19,6 @@ package software.amazon.qldb.tutorial.model.streams
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.*
 
 /**
  * Represents the revision summary that appears in the [ ]. Some revisions might not have a documentId. These are

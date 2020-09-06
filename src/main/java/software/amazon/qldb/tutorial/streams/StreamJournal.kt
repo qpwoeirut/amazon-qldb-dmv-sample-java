@@ -69,6 +69,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
+import kotlin.system.exitProcess
 
 /**
  * Demonstrates the QLDB stream functionality.
@@ -86,43 +87,43 @@ object StreamJournal {
     /**
      * AWS service clients used throughout the tutorial code.
      */
-    var kinesis = AmazonKinesisClientBuilder.defaultClient()
-    var iam = AmazonIdentityManagementClientBuilder.defaultClient()
-    var qldb = AmazonQLDBClientBuilder.defaultClient()
-    var credentialsProvider: AWSCredentialsProvider = DefaultAWSCredentialsProviderChain.getInstance()
+    private val kinesis = AmazonKinesisClientBuilder.defaultClient()
+    private val iam = AmazonIdentityManagementClientBuilder.defaultClient()
+    private val qldb = AmazonQLDBClientBuilder.defaultClient()
+    private val credentialsProvider: AWSCredentialsProvider = DefaultAWSCredentialsProviderChain.getInstance()
 
     /**
      * Shared variables to make the tutorial code easy to follow.
      */
-    var ledgerName: String = LEDGER_NAME
-    var streamName: String = STREAM_NAME
-    var streamId: String? = null
-    var kdsArn: String? = null
-    var roleArn: String? = null
-    var kdsName: String? = null
-    var kdsRoleName: String? = null
-    var kdsPolicyName: String? = null
+    private const val ledgerName: String = LEDGER_NAME
+    private const val streamName: String = STREAM_NAME
+    private var streamId: String? = null
+    private var kdsArn: String? = null
+    private var roleArn: String? = null
+    private var kdsName: String? = null
+    private var kdsRoleName: String? = null
+    private var kdsPolicyName: String? = null
     private val kclConfig: KinesisClientLibConfiguration
-    val kdsReader: Worker
-    var regionName = "us-east-1"
-    var exclusiveEndTime: Date? = null
-    var isAggregationEnabled = false
-    var bufferCapacity = 0
-    var waiter: CompletableFuture<Void?>? = null
-    var recordBuffer: MutableList<StreamRecord> = ArrayList()
-    var areAllRecordsFound: Function<StreamRecord, Boolean>? = null
-    var STREAM_ROLE_KINESIS_STATEMENT_TEMPLATE = "{" +
+    private val kdsReader: Worker
+    private const val regionName = "us-east-1"
+    private var exclusiveEndTime: Date? = null
+    private var isAggregationEnabled = false
+    private var bufferCapacity = 0
+    private val waiter: CompletableFuture<Void?>
+    private val recordBuffer: MutableList<StreamRecord> = ArrayList()
+    private var areAllRecordsFound: Function<StreamRecord, Boolean>? = null
+    private const val STREAM_ROLE_KINESIS_STATEMENT_TEMPLATE = "{" +
             "   \"Sid\": \"QLDBStreamKinesisPermissions\"," +
             "   \"Action\": [\"kinesis:PutRecord\", \"kinesis:PutRecords\", " +
             "\"kinesis:DescribeStream\", \"kinesis:ListShards\"]," +
             "   \"Effect\": \"Allow\"," +
             "   \"Resource\": \"{kdsArn}\"" +
             "}"
-    const val POLICY_TEMPLATE = "{" +
+    private const val POLICY_TEMPLATE = "{" +
             "   \"Version\" : \"2012-10-17\"," +
             "   \"Statement\": [ {statements} ]" +
             "}"
-    var ASSUME_ROLE_POLICY = POLICY_TEMPLATE.replace(
+    private val ASSUME_ROLE_POLICY = POLICY_TEMPLATE.replace(
         "{statements}",
         "{" +
                 "   \"Effect\": \"Allow\"," +
@@ -159,7 +160,7 @@ object StreamJournal {
             log.info("Starting cleanup...")
             cleanupQldbResources()
             cleanupKinesisResources()
-            System.exit(0)
+            exitProcess(0)
         }
     }
 
@@ -173,7 +174,7 @@ object StreamJournal {
      * @param isBounded true if the stream has an exclusive end time.
      * @return the number of expected records.
      */
-    fun numberOfExpectedRecords(isBounded: Boolean): Int {
+    private fun numberOfExpectedRecords(isBounded: Boolean): Int {
         val baseNumber = SampleData.LICENSES.size +
                 SampleData.PEOPLE.size +
                 SampleData.REGISTRATIONS.size +
@@ -189,9 +190,9 @@ object StreamJournal {
      * Initialize the tutorial code.
      */
     init {
-        kdsName = ledgerName + "-kinesis-stream"
-        kdsRoleName = ledgerName + "-stream-role"
-        kdsPolicyName = ledgerName + "-stream-policy"
+        kdsName = "$ledgerName-kinesis-stream"
+        kdsRoleName = "$ledgerName-stream-role"
+        kdsPolicyName = "$ledgerName-stream-policy"
         kclConfig = KinesisClientLibConfiguration(ledgerName, kdsName, credentialsProvider, "tutorial")
             .withInitialPositionInStream(InitialPositionInStream.TRIM_HORIZON)
             .withRegionName(regionName)
@@ -201,7 +202,7 @@ object StreamJournal {
             .build()
         isAggregationEnabled = true
         bufferCapacity = numberOfExpectedRecords(exclusiveEndTime != null)
-        areAllRecordsFound = Function { record: StreamRecord? -> recordBuffer.size == bufferCapacity }
+        areAllRecordsFound = Function { recordBuffer.size == bufferCapacity }
         waiter = CompletableFuture()
     }
 
@@ -217,7 +218,7 @@ object StreamJournal {
         insertDocuments()
         createQldbStream()
         startStreamReader()
-        waiter!!.get()
+        waiter.get()
         if (exclusiveEndTime != null) {
             waitForQldbStreamCompletion()
         }
@@ -239,11 +240,11 @@ object StreamJournal {
     /**
      * Creates a few tables in the ledger created using [.createLedger].
      */
-    fun createTables() {
+    private fun createTables() {
         CreateTable.main()
     }
 
-    fun insertDocuments() {
+    private fun insertDocuments() {
         InsertDocument.main()
     }
 
@@ -282,7 +283,7 @@ object StreamJournal {
     /**
      * Create a Kinesis Data Stream to stream Journal data to Kinesis.
      */
-    fun createKdsIfNotExists() {
+    private fun createKdsIfNotExists() {
         try {
             log.info("Check if Kinesis Data Stream already exists.")
             val describeStreamRequest = DescribeStreamRequest()
@@ -304,7 +305,7 @@ object StreamJournal {
     /**
      * Wait for Kinesis Data Stream completion.
      */
-    fun waitForQldbStreamCompletion() {
+    private fun waitForQldbStreamCompletion() {
         val describeStreamRequest = DescribeJournalKinesisStreamRequest()
             .withStreamId(streamId)
             .withLedgerName(ledgerName)
@@ -323,7 +324,7 @@ object StreamJournal {
             retries++
         }
         if (retries >= MAX_RETRIES) {
-            throw RuntimeException("Kinesis Stream with name " + kdsName + " never went completed.")
+            throw RuntimeException("Kinesis Stream with name $kdsName never went completed.")
         }
     }
 
@@ -355,7 +356,7 @@ object StreamJournal {
             retries++
         }
         if (retries >= MAX_RETRIES) {
-            throw RuntimeException("Kinesis Stream with name " + kdsName + " never went active")
+            throw RuntimeException("Kinesis Stream with name $kdsName never went active")
         }
     }
 
@@ -408,7 +409,7 @@ object StreamJournal {
      *
      * @return [KinesisConfiguration] for the QLDB stream.
      */
-    val kdsConfig: KinesisConfiguration
+    private val kdsConfig: KinesisConfiguration
         get() {
             var kinesisConfiguration = KinesisConfiguration().withStreamArn(kdsArn)
 
@@ -463,7 +464,7 @@ object StreamJournal {
     /**
      * Clean up QLDB resources used by the tutorial code.
      */
-    fun cleanupQldbResources() {
+    private fun cleanupQldbResources() {
         stopStreamReader()
         if (exclusiveEndTime == null) {
             cancelQldbStream()
@@ -474,7 +475,7 @@ object StreamJournal {
     /**
      * Cancel the QLDB stream.
      */
-    fun cancelQldbStream() {
+    private fun cancelQldbStream() {
         if (null == streamId) {
             return
         }
@@ -494,7 +495,7 @@ object StreamJournal {
     /**
      * Stops the Stream Reader.
      */
-    fun stopStreamReader() {
+    private fun stopStreamReader() {
         try {
             kdsReader.startGracefulShutdown()[30, TimeUnit.SECONDS]
             log.info("Stream reader was stopped.")
@@ -612,7 +613,7 @@ object StreamJournal {
             retries++
         }
         if (retries >= MAX_RETRIES) {
-            throw RuntimeException("Kinesis Stream with name " + kdsName + " could not be deleted.")
+            throw RuntimeException("Kinesis Stream with name $kdsName could not be deleted.")
         }
     }
 
@@ -647,7 +648,7 @@ object StreamJournal {
                     if (record.qldbStreamArn.contains(streamId!!)) {
                         recordBuffer.add(record)
                         if (areAllRecordsFound!!.apply(record)) {
-                            waiter!!.complete(null)
+                            waiter.complete(null)
                         }
                     }
                 } catch (e: Exception) {

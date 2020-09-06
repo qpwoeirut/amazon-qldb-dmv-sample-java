@@ -86,11 +86,10 @@ class QldbRevision @JsonCreator constructor(
         if (other !is QldbRevision) {
             return false
         }
-        val that = other
-        return blockAddress == that.blockAddress && metadata == that.metadata && Arrays.equals(
-            hash,
-            that.hash
-        ) && data == that.data
+        return blockAddress == other.blockAddress
+                && metadata == other.metadata
+                && hash.contentEquals(other.hash)
+                && data == other.data
     }
 
     /**
@@ -102,7 +101,7 @@ class QldbRevision @JsonCreator constructor(
         // CHECKSTYLE:OFF - Disabling as we are generating a hashCode of multiple properties.
         var result = Objects.hash(blockAddress, metadata, data)
         // CHECKSTYLE:ON
-        result = 31 * result + Arrays.hashCode(hash)
+        result = 31 * result + hash.contentHashCode()
         return result
     }
 
@@ -115,9 +114,6 @@ class QldbRevision @JsonCreator constructor(
         // further computed. However, these system hashes still participate to validate
         // the journal block. User revisions will always contain values for all fields
         // and can therefore have their hash computed.
-        if (blockAddress == null && metadata == null && data == null) {
-            return
-        }
         try {
             val metadataIon = Constants.MAPPER.writeValueAsIonValue(
                 metadata
@@ -173,9 +169,8 @@ class QldbRevision @JsonCreator constructor(
             val metadataHash = hashIonValue(metadata)
             val dataHash = hashIonValue(revisionData)
             val candidateHash = Verifier.dot(metadataHash, dataHash)
-            require(Arrays.equals(candidateHash, expectedHash)) {
-                ("Hash entry of QLDB revision and computed hash "
-                        + "of QLDB revision do not match")
+            require(candidateHash.contentEquals(expectedHash)) {
+                "Hash entry of QLDB revision and computed hash of QLDB revision do not match"
             }
         }
     }
