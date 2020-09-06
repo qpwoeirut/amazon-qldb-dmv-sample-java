@@ -108,7 +108,7 @@ object GetRevision {
                 log.info("Let's get a proof for the document.")
                 val proofResult = getRevision(
                     ledgerName,
-                    document.metadata!!.id,
+                    document.metadata.id,
                     digestTipAddress,
                     document.blockAddress
                 )

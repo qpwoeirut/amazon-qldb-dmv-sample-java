@@ -43,7 +43,7 @@ class JournalBlock @JsonCreator constructor(
     @param:JsonProperty("previousBlockHash") val previousBlockHash: ByteArray,
     @param:JsonProperty("entriesHashList") val entriesHashList: Array<ByteArray>,
     @param:JsonProperty("transactionInfo") val transactionInfo: TransactionInfo,
-    @param:JsonProperty("revisions") val revisions: List<QldbRevision>?
+    @param:JsonProperty("revisions") val revisions: List<QldbRevision>
 ) {
 
     override fun toString(): String {
@@ -91,19 +91,19 @@ class JournalBlock @JsonCreator constructor(
         if (transactionInfo != that.transactionInfo) {
             return false
         }
-        return if (revisions != null) revisions == that.revisions else that.revisions == null
+        return revisions == that.revisions
     }
 
     override fun hashCode(): Int {
         var result = blockAddress.hashCode()
         result = 31 * result + transactionId.hashCode()
         result = 31 * result + blockTimestamp.hashCode()
-        result = 31 * result + Arrays.hashCode(blockHash)
-        result = 31 * result + Arrays.hashCode(entriesHash)
-        result = 31 * result + Arrays.hashCode(previousBlockHash)
-        result = 31 * result + Arrays.deepHashCode(entriesHashList)
+        result = 31 * result + blockHash.contentHashCode()
+        result = 31 * result + entriesHash.contentHashCode()
+        result = 31 * result + previousBlockHash.contentHashCode()
+        result = 31 * result + entriesHashList.contentDeepHashCode()
         result = 31 * result + transactionInfo.hashCode()
-        result = 31 * result + (revisions?.hashCode() ?: 0)
+        result = 31 * result + revisions.hashCode()
         return result
     }
 
@@ -188,7 +188,7 @@ class JournalBlock @JsonCreator constructor(
     }
 
     private fun computeRevisionsHash(): ByteArray {
-        return Verifier.calculateMerkleTreeRootHash(revisions!!.stream().map { obj: QldbRevision -> obj.hash }
+        return Verifier.calculateMerkleTreeRootHash(revisions.stream().map { obj: QldbRevision -> obj.hash }
             .collect(Collectors.toList()))
     }
 

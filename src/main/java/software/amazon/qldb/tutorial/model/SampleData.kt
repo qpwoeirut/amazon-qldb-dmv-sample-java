@@ -224,7 +224,7 @@ object SampleData {
     @JvmStatic
     fun getDocumentIdsFromDmlResult(result: Result): List<String> {
         val strings: MutableList<String> = ArrayList()
-        result.iterator().forEachRemaining { row: IonValue? -> strings.add(getDocumentIdFromDmlResultDocument(row)) }
+        result.iterator().forEachRemaining { row -> strings.add(getDocumentIdFromDmlResultDocument(row)) }
         return strings
     }
 
@@ -235,7 +235,7 @@ object SampleData {
      * The [IonValue] representing the results of a DML operation.
      * @return a string of document ID.
      */
-    fun getDocumentIdFromDmlResultDocument(dmlResultDocument: IonValue?): String {
+    private fun getDocumentIdFromDmlResultDocument(dmlResultDocument: IonValue): String {
         return try {
             val result = Constants.MAPPER.readValue(dmlResultDocument, DmlResultDocument::class.java)
             result.documentId
