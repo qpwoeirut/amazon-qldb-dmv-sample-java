@@ -15,140 +15,105 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import com.amazon.ion.IonInt;
-import com.amazon.ion.IonString;
-import com.amazon.ion.IonStruct;
-import com.amazon.ion.IonTimestamp;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.Objects;
+import com.amazon.ion.IonInt
+import com.amazon.ion.IonString
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonTimestamp
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers.IonTimestampJavaDateSerializer
+import org.slf4j.LoggerFactory
+import java.util.*
 
 /**
  * Represents the metadata field of a QLDB Document
  */
-public class RevisionMetadata {
-    private static final Logger log = LoggerFactory.getLogger(RevisionMetadata.class);
-    private final String id;
-    private final long version;
-    @JsonSerialize(using = IonTimestampSerializers.IonTimestampJavaDateSerializer.class)
-    private final Date txTime;
-    private final String txId;
-
-    @JsonCreator
-    public RevisionMetadata(@JsonProperty("id") final String id,
-                            @JsonProperty("version") final long version,
-                            @JsonProperty("txTime") final Date txTime,
-                            @JsonProperty("txId") final String txId) {
-        this.id = id;
-        this.version = version;
-        this.txTime = txTime;
-        this.txId = txId;
-    }
-
+class RevisionMetadata @JsonCreator constructor(
     /**
      * Gets the unique ID of a QLDB document.
      *
      * @return the document ID.
      */
-    public String getId() {
-        return id;
-    }
-
+    @param:JsonProperty("id") val id: String,
     /**
      * Gets the version number of the document in the document's modification history.
      * @return the version number.
      */
-    public long getVersion() {
-        return version;
-    }
-
+    @param:JsonProperty("version") val version: Long,
     /**
      * Gets the time during which the document was modified.
      *
      * @return the transaction time.
      */
-    public Date getTxTime() {
-        return txTime;
-    }
-
+    @field:JsonSerialize(using = IonTimestampJavaDateSerializer::class) @param:JsonProperty("txTime") val txTime: Date,
     /**
      * Gets the transaction ID associated with this document.
      *
      * @return the transaction ID.
      */
-    public String getTxId() {
-        return txId;
-    }
-
-    public static RevisionMetadata fromIon(final IonStruct ionStruct) {
-        if (ionStruct == null) {
-            throw new IllegalArgumentException("Metadata cannot be null");
-        }
-        try {
-            IonString id = (IonString) ionStruct.get("id");
-            IonInt version = (IonInt) ionStruct.get("version");
-            IonTimestamp txTime = (IonTimestamp) ionStruct.get("txTime");
-            IonString txId = (IonString) ionStruct.get("txId");
-            if (id == null || version == null || txTime == null || txId == null) {
-                throw new IllegalArgumentException("Document is missing required fields");
-            }
-            return new RevisionMetadata(id.stringValue(), version.longValue(), new Date(txTime.getMillis()), txId.stringValue());
-        } catch (ClassCastException e) {
-            log.error("Failed to parse ion document");
-            throw new IllegalArgumentException("Document members are not of the correct type", e);
-        }
-    }
+    @param:JsonProperty("txId") val txId: String
+) {
 
     /**
-     * Converts a {@link RevisionMetadata} object to a string.
+     * Converts a [RevisionMetadata] object to a string.
      *
-     * @return the string representation of the {@link QldbRevision} object.
+     * @return the string representation of the [QldbRevision] object.
      */
-    @Override
-    public String toString() {
-        return "Metadata{"
+    override fun toString(): String {
+        return ("Metadata{"
                 + "id='" + id + '\''
                 + ", version=" + version
                 + ", txTime=" + txTime
                 + ", txId='" + txId
                 + '\''
-                + '}';
+                + '}')
     }
 
     /**
-     * Check whether two {@link RevisionMetadata} objects are equivalent.
+     * Check whether two [RevisionMetadata] objects are equivalent.
      *
-     * @return {@code true} if the two objects are equal, {@code false} otherwise.
+     * @return `true` if the two objects are equal, `false` otherwise.
      */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
-        RevisionMetadata metadata = (RevisionMetadata) o;
-        return version == metadata.version
-                && id.equals(metadata.id)
-                && txTime.equals(metadata.txTime)
-                && txId.equals(metadata.txId);
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
+        }
+        if (o == null || javaClass != o.javaClass) {
+            return false
+        }
+        val metadata = o as RevisionMetadata
+        return version == metadata.version && id == metadata.id && txTime == metadata.txTime && txId == metadata.txId
     }
 
     /**
-     * Generate a hash code for the {@link RevisionMetadata} object.
+     * Generate a hash code for the [RevisionMetadata] object.
      *
      * @return the hash code.
      */
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // CHECKSTYLE:OFF - Disabling as we are generating a hashCode of multiple properties.
-        return Objects.hash(id, version, txTime, txId);
+        return Objects.hash(id, version, txTime, txId)
         // CHECKSTYLE:ON
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(RevisionMetadata::class.java)
+        fun fromIon(ionStruct: IonStruct?): RevisionMetadata {
+            requireNotNull(ionStruct) { "Metadata cannot be null" }
+            return try {
+                val id = ionStruct["id"] as IonString
+                val version = ionStruct["version"] as IonInt
+                val txTime = ionStruct["txTime"] as IonTimestamp
+                val txId = ionStruct["txId"] as IonString
+                require(!(id == null || version == null || txTime == null || txId == null)) { "Document is missing required fields" }
+                RevisionMetadata(id.stringValue(), version.longValue(), Date(txTime.millis), txId.stringValue())
+            } catch (e: ClassCastException) {
+                log.error("Failed to parse ion document")
+                throw IllegalArgumentException("Document members are not of the correct type", e)
+            }
+        }
     }
 }

@@ -15,194 +15,167 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import com.amazon.ion.IonBlob;
-import com.amazon.ion.IonStruct;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.qldb.tutorial.Constants;
-import software.amazon.qldb.tutorial.Verifier;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
+import com.amazon.ion.IonBlob
+import com.amazon.ion.IonStruct
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.tutorial.Constants
+import software.amazon.qldb.tutorial.Verifier
+import software.amazon.qldb.tutorial.qldb.BlockAddress
+import software.amazon.qldb.tutorial.qldb.QldbIonUtils.hashIonValue
+import java.io.IOException
+import java.util.*
 
 /**
  * Represents a QldbRevision including both user data and metadata.
  */
-public final class QldbRevision {
-    private static final Logger log = LoggerFactory.getLogger(QldbRevision.class);
-
-    private final BlockAddress blockAddress;
-    private final RevisionMetadata metadata;
-    private final byte[] hash;
-    private final IonStruct data;
-
-    @JsonCreator
-    public QldbRevision(@JsonProperty("blockAddress") final BlockAddress blockAddress,
-                        @JsonProperty("metadata") final RevisionMetadata metadata,
-                        @JsonProperty("hash") final byte[] hash,
-                        @JsonProperty("data") final IonStruct data) {
-        this.blockAddress = blockAddress;
-        this.metadata = metadata;
-        this.hash = hash;
-        this.data = data;
-    }
-
+class QldbRevision @JsonCreator constructor(
     /**
      * Gets the unique ID of a QLDB document.
      *
-     * @return the {@link BlockAddress} object.
+     * @return the [BlockAddress] object.
      */
-    public BlockAddress getBlockAddress() {
-        return blockAddress;
-    }
-
+    @param:JsonProperty("blockAddress") val blockAddress: BlockAddress?,
     /**
      * Gets the metadata of the revision.
      *
-     * @return the {@link RevisionMetadata} object.
+     * @return the [RevisionMetadata] object.
      */
-    public RevisionMetadata getMetadata() {
-        return metadata;
-    }
-
+    @param:JsonProperty("metadata") val metadata: RevisionMetadata?,
     /**
      * Gets the SHA-256 hash value of the data.
      *
      * @return the byte array representing the hash.
      */
-    public byte[] getHash() {
-        return hash;
-    }
-
+    @param:JsonProperty("hash") val hash: ByteArray,
     /**
      * Gets the revision data.
      *
      * @return the revision data.
      */
-    public IonStruct getData() {
-        return data;
-    }
+    @param:JsonProperty("data") val data: IonStruct?
+) {
 
     /**
-     * Constructs a new {@link QldbRevision} from an {@link IonStruct}.
+     * Converts a [QldbRevision] object to string.
      *
-     * The specified {@link IonStruct} must include the following fields
-     *
-     * - blockAddress -- a {@link BlockAddress},
-     * - metadata -- a {@link RevisionMetadata},
-     * - hash -- the document's hash calculated by QLDB,
-     * - data -- an {@link IonStruct} containing user data in the document.
-     *
-     * If any of these fields are missing or are malformed, then throws {@link IllegalArgumentException}.
-     *
-     * If the document hash calculated from the members of the specified {@link IonStruct} does not match
-     * the hash member of the {@link IonStruct} then throws {@link IllegalArgumentException}.
-     *
-     * @param ionStruct
-     *              The {@link IonStruct} that contains a {@link QldbRevision} object.
-     * @return the converted {@link QldbRevision} object.
-     * @throws IOException if failed to parse parameter {@link IonStruct}.
+     * @return the string representation of the [QldbRevision] object.
      */
-    public static QldbRevision fromIon(final IonStruct ionStruct) throws IOException {
-        try {
-            BlockAddress blockAddress = Constants.MAPPER.readValue(ionStruct.get("blockAddress"), BlockAddress.class);
-            IonBlob hash = (IonBlob) ionStruct.get("hash");
-            IonStruct metadataStruct = (IonStruct) ionStruct.get("metadata");
-            IonStruct data = (IonStruct) ionStruct.get("data");
-            if (hash == null || data == null) {
-                throw new IllegalArgumentException("Document is missing required fields");
-            }
-            verifyRevisionHash(metadataStruct, data, hash.getBytes());
-            RevisionMetadata metadata = RevisionMetadata.fromIon(metadataStruct);
-            return new QldbRevision(blockAddress, metadata, hash.getBytes(), data);
-        } catch (ClassCastException e) {
-            log.error("Failed to parse ion document");
-            throw new IllegalArgumentException("Document members are not of the correct type", e);
-        }
-    }
-
-    /**
-     * Converts a {@link QldbRevision} object to string.
-     *
-     * @return the string representation of the {@link QldbRevision} object.
-     */
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "QldbRevision{" +
                 "blockAddress=" + blockAddress +
                 ", metadata=" + metadata +
                 ", hash=" + Arrays.toString(hash) +
                 ", data=" + data +
-                '}';
+                '}'
     }
 
     /**
-     * Check whether two {@link QldbRevision} objects are equivalent.
+     * Check whether two [QldbRevision] objects are equivalent.
      *
-     * @return {@code true} if the two objects are equal, {@code false} otherwise.
+     * @return `true` if the two objects are equal, `false` otherwise.
      */
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
         }
-        if (!(o instanceof QldbRevision)) {
-            return false;
+        if (o !is QldbRevision) {
+            return false
         }
-        final QldbRevision that = (QldbRevision) o;
-        return Objects.equals(getBlockAddress(), that.getBlockAddress()) && Objects.equals(getMetadata(),
-            that.getMetadata()) && Arrays.equals(getHash(), that.getHash()) && Objects.equals(getData(),
-            that.getData());
+        val that = o
+        return blockAddress == that.blockAddress && metadata == that.metadata && Arrays.equals(
+            hash,
+            that.hash
+        ) && data == that.data
     }
 
     /**
-     * Create a hash code for the {@link QldbRevision} object.
+     * Create a hash code for the [QldbRevision] object.
      *
      * @return the hash code.
      */
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // CHECKSTYLE:OFF - Disabling as we are generating a hashCode of multiple properties.
-        int result = Objects.hash(blockAddress, metadata, data);
+        var result = Objects.hash(blockAddress, metadata, data)
         // CHECKSTYLE:ON
-        result = 31 * result + Arrays.hashCode(hash);
-        return result;
+        result = 31 * result + Arrays.hashCode(hash)
+        return result
     }
 
     /**
      * Throws an IllegalArgumentException if the hash of the revision data and metadata
      * does not match the hash provided by QLDB with the revision.
      */
-    public void verifyRevisionHash() {
+    fun verifyRevisionHash() {
         // Certain internal-only system revisions only contain a hash which cannot be
         // further computed. However, these system hashes still participate to validate
         // the journal block. User revisions will always contain values for all fields
         // and can therefore have their hash computed.
         if (blockAddress == null && metadata == null && data == null) {
-            return;
+            return
         }
-
         try {
-            IonStruct metadataIon = (IonStruct) Constants.MAPPER.writeValueAsIonValue(metadata);
-            verifyRevisionHash(metadataIon, data, hash);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Could not encode revision metadata to ion.", e);
+            val metadataIon = Constants.MAPPER.writeValueAsIonValue(
+                metadata
+            ) as IonStruct
+            verifyRevisionHash(metadataIon, data, hash)
+        } catch (e: IOException) {
+            throw IllegalArgumentException("Could not encode revision metadata to ion.", e)
         }
     }
 
-    private static void verifyRevisionHash(IonStruct metadata, IonStruct revisionData, byte[] expectedHash) {
-        byte[] metadataHash = QldbIonUtils.hashIonValue(metadata);
-        byte[] dataHash = QldbIonUtils.hashIonValue(revisionData);
-        byte[] candidateHash = Verifier.dot(metadataHash, dataHash);
-        if (!Arrays.equals(candidateHash, expectedHash)) {
-            throw new IllegalArgumentException("Hash entry of QLDB revision and computed hash "
-                    + "of QLDB revision do not match");
+    companion object {
+        private val log = LoggerFactory.getLogger(QldbRevision::class.java)
+
+        /**
+         * Constructs a new [QldbRevision] from an [IonStruct].
+         *
+         * The specified [IonStruct] must include the following fields
+         *
+         * - blockAddress -- a [BlockAddress],
+         * - metadata -- a [RevisionMetadata],
+         * - hash -- the document's hash calculated by QLDB,
+         * - data -- an [IonStruct] containing user data in the document.
+         *
+         * If any of these fields are missing or are malformed, then throws [IllegalArgumentException].
+         *
+         * If the document hash calculated from the members of the specified [IonStruct] does not match
+         * the hash member of the [IonStruct] then throws [IllegalArgumentException].
+         *
+         * @param ionStruct
+         * The [IonStruct] that contains a [QldbRevision] object.
+         * @return the converted [QldbRevision] object.
+         * @throws IOException if failed to parse parameter [IonStruct].
+         */
+        @JvmStatic
+        @Throws(IOException::class)
+        fun fromIon(ionStruct: IonStruct): QldbRevision {
+            return try {
+                val blockAddress = Constants.MAPPER.readValue(ionStruct["blockAddress"], BlockAddress::class.java)
+                val hash = ionStruct["hash"] as IonBlob
+                val metadataStruct = ionStruct["metadata"] as IonStruct
+                val data = ionStruct["data"] as IonStruct
+                require(!(hash == null || data == null)) { "Document is missing required fields" }
+                verifyRevisionHash(metadataStruct, data, hash.bytes)
+                val metadata = RevisionMetadata.fromIon(metadataStruct)
+                QldbRevision(blockAddress, metadata, hash.bytes, data)
+            } catch (e: ClassCastException) {
+                log.error("Failed to parse ion document")
+                throw IllegalArgumentException("Document members are not of the correct type", e)
+            }
+        }
+
+        private fun verifyRevisionHash(metadata: IonStruct, revisionData: IonStruct?, expectedHash: ByteArray) {
+            val metadataHash = hashIonValue(metadata)
+            val dataHash = hashIonValue(revisionData)
+            val candidateHash = Verifier.dot(metadataHash, dataHash)
+            require(Arrays.equals(candidateHash, expectedHash)) {
+                ("Hash entry of QLDB revision and computed hash "
+                        + "of QLDB revision do not match")
+            }
         }
     }
 }

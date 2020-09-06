@@ -15,54 +15,24 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import java.util.Arrays;
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers.IonTimestampJavaDateSerializer
+import java.util.*
 
 /**
  * Contains information about an individual statement run as part of a transaction.
  */
-public class StatementInfo {
+class StatementInfo @JsonCreator constructor(
+    @param:JsonProperty("statement") val statement: String,
+    @field:JsonSerialize(using = IonTimestampJavaDateSerializer::class) @param:JsonProperty("startTime") val startTime: Date,
+    @param:JsonProperty("statementDigest") val statementDigest: ByteArray
+) {
 
-    private String statement;
-    @JsonSerialize(using = IonTimestampSerializers.IonTimestampJavaDateSerializer.class)
-    private Date startTime;
-    private byte[] statementDigest;
-
-    @JsonCreator
-    public StatementInfo(@JsonProperty("statement") final String statement,
-                         @JsonProperty("startTime") final Date startTime,
-                         @JsonProperty("statementDigest") final byte[] statementDigest) {
-        this.statement = statement;
-        this.startTime = startTime;
-        this.statementDigest = statementDigest;
-    }
-
-    public String getStatement() {
-        return statement;
-    }
-
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public byte[] getStatementDigest() {
-        return statementDigest;
-    }
-
-    @Override
-    public String toString() {
-        return "StatementInfo{"
-            + "statement='" + statement + '\''
-            + ", startTime=" + startTime
-            + ", statementDigest=" + Arrays.toString(statementDigest)
-            + '}';
+    override fun toString(): String {
+        return "StatementInfo{statement='$statement', startTime=$startTime, statementDigest=${Arrays.toString(statementDigest)}}"
     }
 }

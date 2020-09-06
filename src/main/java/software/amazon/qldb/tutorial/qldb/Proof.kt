@@ -15,56 +15,44 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonSystem;
-import com.amazon.ion.system.IonSystemBuilder;
-import com.amazonaws.services.qldb.model.GetRevisionRequest;
-import com.amazonaws.services.qldb.model.GetRevisionResult;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.amazon.ion.IonReader
+import com.amazon.ion.system.IonSystemBuilder
+import java.util.*
 
 /**
- * A Java representation of the {@link Proof} object.
- * Returned from the {@link com.amazonaws.services.qldb.AmazonQLDB#getRevision(GetRevisionRequest)} api.
+ * A Java representation of the [Proof] object.
+ * Returned from the [com.amazonaws.services.qldb.AmazonQLDB.getRevision] api.
  */
-public final class Proof {
-    private static final IonSystem SYSTEM = IonSystemBuilder.standard().build();
+class Proof(val internalHashes: List<ByteArray>) {
 
-    private List<byte[]> internalHashes;
+    companion object {
+        private val SYSTEM = IonSystemBuilder.standard().build()
 
-    public Proof(final List<byte[]> internalHashes) {
-        this.internalHashes = internalHashes;
-    }
-
-    public List<byte[]> getInternalHashes() {
-        return internalHashes;
-    }
-
-    /**
-     * Decodes a {@link Proof} from an ion text String. This ion text is returned in
-     * a {@link GetRevisionResult#getProof()}
-     *
-     * @param ionText
-     *              The ion text representing a {@link Proof} object.
-     * @return {@link JournalBlock} parsed from the ion text.
-     * @throws IllegalStateException if failed to parse the {@link Proof} object from the given ion text.
-     */
-    public static Proof fromBlob(final String ionText) {
-        try {
-            IonReader reader = SYSTEM.newReader(ionText);
-            List<byte[]> list = new ArrayList<>();
-            reader.next();
-            reader.stepIn();
-            while (reader.next() != null) {
-                list.add(reader.newBytes());
+        /**
+         * Decodes a [Proof] from an ion text String. This ion text is returned in
+         * a [GetRevisionResult.getProof]
+         *
+         * @param ionText
+         * The ion text representing a [Proof] object.
+         * @return [JournalBlock] parsed from the ion text.
+         * @throws IllegalStateException if failed to parse the [Proof] object from the given ion text.
+         */
+        @JvmStatic
+        fun fromBlob(ionText: String?): Proof {
+            return try {
+                val reader: IonReader = SYSTEM.newReader(ionText)
+                val list: MutableList<ByteArray> = ArrayList()
+                reader.next()
+                reader.stepIn()
+                while (reader.next() != null) {
+                    list.add(reader.newBytes())
+                }
+                Proof(list)
+            } catch (e: Exception) {
+                throw IllegalStateException("Failed to parse a Proof from byte array")
             }
-            return new Proof(list);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to parse a Proof from byte array");
         }
     }
 }

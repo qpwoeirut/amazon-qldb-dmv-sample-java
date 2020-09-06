@@ -15,36 +15,34 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.services.qldbsession.QldbSessionClient;
-import software.amazon.awssdk.services.qldbsession.QldbSessionClientBuilder;
-import software.amazon.qldb.QldbDriver;
-import software.amazon.qldb.RetryPolicy;
+import org.slf4j.LoggerFactory
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider
+import software.amazon.awssdk.services.qldbsession.QldbSessionClient
+import software.amazon.awssdk.services.qldbsession.QldbSessionClientBuilder
+import software.amazon.qldb.QldbDriver
+import software.amazon.qldb.RetryPolicy
+import java.net.URI
+import java.net.URISyntaxException
+import java.sql.DriverManager.getDriver
 
 /**
  * Connect to a session for a given ledger using default settings.
- * <p>
+ *
+ *
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class ConnectToLedger {
-    public static final Logger log = LoggerFactory.getLogger(ConnectToLedger.class);
-    public static AwsCredentialsProvider credentialsProvider;
-    public static String endpoint = null;
-    public static String ledgerName = Constants.LEDGER_NAME;
-    public static String region = null;
-    public static QldbDriver driver;
+object ConnectToLedger {
+    val log = LoggerFactory.getLogger(ConnectToLedger::class.java)
+    var credentialsProvider: AwsCredentialsProvider? = null
+    var endpoint: String? = null
+    val ledgerName = Constants.LEDGER_NAME
+    val region: String? = null
 
-    private ConnectToLedger() {
-    }
+    var driver: QldbDriver = createQldbDriver()
+        @JvmStatic get
 
     /**
      * Create a pooled driver for creating sessions.
@@ -54,16 +52,18 @@ public final class ConnectToLedger {
      * server side failures or network issues.
      * @return The pooled driver for creating sessions.
      */
-    public static QldbDriver createQldbDriver(int retryAttempts) {
-        QldbSessionClientBuilder builder = getAmazonQldbSessionClientBuilder();
+    fun createQldbDriver(retryAttempts: Int): QldbDriver {
+        val builder = amazonQldbSessionClientBuilder
         return QldbDriver.builder()
-                             .ledger(ledgerName)
-                             .transactionRetryPolicy(RetryPolicy
-                                   .builder()
-                                   .maxRetries(retryAttempts)
-                                   .build())
-                             .sessionClientBuilder(builder)
-                             .build();
+            .ledger(ledgerName)
+            .transactionRetryPolicy(
+                RetryPolicy
+                    .builder()
+                    .maxRetries(retryAttempts)
+                    .build()
+            )
+            .sessionClientBuilder(builder)
+            .build()
     }
 
     /**
@@ -71,14 +71,16 @@ public final class ConnectToLedger {
      *
      * @return The pooled driver for creating sessions.
      */
-    public static QldbDriver createQldbDriver() {
-        QldbSessionClientBuilder builder = getAmazonQldbSessionClientBuilder();
+    fun createQldbDriver(): QldbDriver {
+        val builder = amazonQldbSessionClientBuilder
         return QldbDriver.builder()
             .ledger(ledgerName)
-            .transactionRetryPolicy(RetryPolicy.builder()
-                                               .maxRetries(Constants.RETRY_LIMIT).build())
+            .transactionRetryPolicy(
+                RetryPolicy.builder()
+                    .maxRetries(Constants.RETRY_LIMIT).build()
+            )
             .sessionClientBuilder(builder)
-            .build();
+            .build()
     }
 
     /**
@@ -86,39 +88,29 @@ public final class ConnectToLedger {
      *
      * @return An instance of the AmazonQLDBSessionClientBuilder
      */
-    public static QldbSessionClientBuilder getAmazonQldbSessionClientBuilder() {
-        QldbSessionClientBuilder builder = QldbSessionClient.builder();
-        if (null != endpoint && null != region) {
-            try {
-                builder.endpointOverride(new URI(endpoint));
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException(e);
+    @JvmStatic
+    val amazonQldbSessionClientBuilder: QldbSessionClientBuilder
+        get() {
+            val builder = QldbSessionClient.builder()
+            if (null != endpoint && null != region) {
+                try {
+                    builder.endpointOverride(URI(endpoint))
+                } catch (e: URISyntaxException) {
+                    throw IllegalArgumentException(e)
+                }
             }
+            if (null != credentialsProvider) {
+                builder.credentialsProvider(credentialsProvider)
+            }
+            return builder
         }
-        if (null != credentialsProvider) {
-            builder.credentialsProvider(credentialsProvider);
-        }
-        return builder;
-    }
 
-    /**
-     * Create a pooled driver for creating sessions.
-     *
-     * @return The pooled driver for creating sessions.
-     */
-    public static QldbDriver getDriver() {
-        if (driver == null) {
-            driver = createQldbDriver();
-        }
-        return driver;
-    }
-
-
-    public static void main(final String... args) {
-        Iterable<String> tables = ConnectToLedger.getDriver().getTableNames();
-        log.info("Existing tables in the ledger:");
-        for (String table : tables) {
-            log.info("- {} ", table);
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val tables = driver.tableNames
+        log.info("Existing tables in the ledger:")
+        for (table in tables) {
+            log.info("- {} ", table)
         }
     }
 }

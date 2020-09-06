@@ -15,67 +15,46 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import java.util.Objects;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.slf4j.LoggerFactory
+import java.util.*
 
 /**
  * Represents the BlockAddress field of a QLDB document.
  */
-public final class BlockAddress {
-
-    private static final Logger log = LoggerFactory.getLogger(BlockAddress.class);
-
-    private final String strandId;
-    private final long sequenceNo;
-
-    @JsonCreator
-    public BlockAddress(@JsonProperty("strandId") final String strandId,
-                        @JsonProperty("sequenceNo") final long sequenceNo) {
-        this.strandId = strandId;
-        this.sequenceNo = sequenceNo;
-    }
-
-    public long getSequenceNo() {
-        return sequenceNo;
-    }
-
-    public String getStrandId() {
-        return strandId;
-    }
-
-    @Override
-    public String toString() {
-        return "BlockAddress{"
+class BlockAddress @JsonCreator constructor(
+    @param:JsonProperty("strandId") val strandId: String,
+    @param:JsonProperty("sequenceNo") val sequenceNo: Long
+) {
+    override fun toString(): String {
+        return ("BlockAddress{"
                 + "strandId='" + strandId + '\''
                 + ", sequenceNo=" + sequenceNo
-                + '}';
+                + '}')
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o == null || javaClass != o.javaClass) {
+            return false
         }
-        BlockAddress that = (BlockAddress) o;
-        return sequenceNo == that.sequenceNo
-                && strandId.equals(that.strandId);
+        val that = o as BlockAddress
+        return (sequenceNo == that.sequenceNo
+                && strandId == that.strandId)
     }
 
-    @Override
-    public int hashCode() {
+    override fun hashCode(): Int {
         // CHECKSTYLE:OFF - Disabling as we are generating a hashCode of multiple properties.
-        return Objects.hash(strandId, sequenceNo);
+        return Objects.hash(strandId, sequenceNo)
         // CHECKSTYLE:ON
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(BlockAddress::class.java)
     }
 }

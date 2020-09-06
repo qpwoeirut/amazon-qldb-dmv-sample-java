@@ -15,37 +15,32 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
+import com.amazon.ion.IonValue
+import com.amazon.ionhash.IonHashReaderBuilder
+import com.amazon.ionhash.MessageDigestIonHasherProvider
+import software.amazon.qldb.tutorial.Constants
 
-import com.amazon.ion.IonReader;
-import com.amazon.ion.IonValue;
-import com.amazon.ionhash.IonHashReader;
-import com.amazon.ionhash.IonHashReaderBuilder;
-import com.amazon.ionhash.MessageDigestIonHasherProvider;
-import software.amazon.qldb.tutorial.Constants;
-
-public class QldbIonUtils {
-
-    private static MessageDigestIonHasherProvider ionHasherProvider = new MessageDigestIonHasherProvider("SHA-256");
-
-    private QldbIonUtils() {}
+object QldbIonUtils {
+    private val ionHasherProvider = MessageDigestIonHasherProvider("SHA-256")
 
     /**
-     * Builds a hash value from the given {@link IonValue}.
+     * Builds a hash value from the given [IonValue].
      *
      * @param ionValue
-     *              The {@link IonValue} to hash.
+     * The [IonValue] to hash.
      * @return a byte array representing the hash value.
      */
-    public static byte[] hashIonValue(final IonValue ionValue) {
-        IonReader reader = Constants.SYSTEM.newReader(ionValue);
-        IonHashReader hashReader = IonHashReaderBuilder.standard()
-                .withHasherProvider(ionHasherProvider)
-                .withReader(reader)
-                .build();
-        while (hashReader.next() != null) {  }
-        return hashReader.digest();
+    @JvmStatic
+    fun hashIonValue(ionValue: IonValue?): ByteArray {
+        val reader = Constants.SYSTEM.newReader(ionValue)
+        val hashReader = IonHashReaderBuilder.standard()
+            .withHasherProvider(ionHasherProvider)
+            .withReader(reader)
+            .build()
+        while (hashReader.next() != null) {
+        }
+        return hashReader.digest()
     }
-
 }

@@ -15,33 +15,17 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.qldb
 
-package software.amazon.qldb.tutorial.qldb;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Contains information about an individual document inserted or modified
  * as a result of DML.
  */
-public class DmlResultDocument {
-
-    private String documentId;
-
-    @JsonCreator
-    public DmlResultDocument(@JsonProperty("documentId") final String documentId) {
-        this.documentId = documentId;
-    }
-
-    public String getDocumentId() {
-        return documentId;
-    }
-
-    @Override
-    public String toString() {
-        return "DmlResultDocument{"
-            + "documentId='" + documentId + '\''
-            + '}';
+class DmlResultDocument @JsonCreator constructor(@param:JsonProperty("documentId") val documentId: String) {
+    override fun toString(): String {
+        return ("DmlResultDocument{documentId='$documentId'}")
     }
 }
