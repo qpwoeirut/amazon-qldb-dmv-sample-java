@@ -15,70 +15,42 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model.streams
 
-package software.amazon.qldb.tutorial.model.streams;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Arrays;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import java.util.*
 
 /**
- * Represents the revision summary that appears in the {@link
- * BlockSummaryRecord}. Some revisions might not have a documentId. These are
+ * Represents the revision summary that appears in the [ ]. Some revisions might not have a documentId. These are
  * internal-only system revisions that don't contain user data. Only the
  * revisions that do have a document ID are published in separate revision
  * details record.
  */
-public final class RevisionSummary {
-
-    private String documentId;
-    private byte[] hash;
-
-    @JsonCreator
-    public RevisionSummary(@JsonProperty("documentId") String documentId, @JsonProperty("hash") byte[] hash) {
-        this.documentId = documentId;
-        this.hash = hash;
+class RevisionSummary @JsonCreator constructor(
+    @param:JsonProperty("documentId") val documentId: String,
+    @param:JsonProperty("hash") val hash: ByteArray
+) {
+    override fun toString(): String {
+        return "RevisionSummary{documentId='$documentId', hash=${hash.contentToString()}}"
     }
 
-    @Override
-    public String toString() {
-        return "RevisionSummary{" +
-                "documentId='" + documentId + '\'' +
-                ", hash=" + Arrays.toString(hash) +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-
-        RevisionSummary that = (RevisionSummary) o;
-
-        if (!Objects.equals(documentId, that.documentId)) {
-            return false;
-        }
-        return Arrays.equals(hash, that.hash);
+        val that = other as RevisionSummary
+        return if (documentId != that.documentId) {
+            false
+        } else hash.contentEquals(that.hash)
     }
 
-    @Override
-    public int hashCode() {
-        int result = documentId != null ? documentId.hashCode() : 0;
-        result = 31 * result + Arrays.hashCode(hash);
-        return result;
-    }
-
-    public String getDocumentId() {
-        return documentId;
-    }
-
-    public byte[] getHash() {
-        return hash;
+    override fun hashCode(): Int {
+        var result = documentId.hashCode()
+        result = 31 * result + hash.contentHashCode()
+        return result
     }
 }

@@ -15,14 +15,10 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package software.amazon.qldb.tutorial.model.streams;
+package software.amazon.qldb.tutorial.model.streams
 
 /**
  * Allows modeling the content of all revisions as a generic revision data. Used
- * in the {@link Revision} and extended by domain models in {@link
- * software.amazon.qldb.tutorial.model} to make it easier to write the {@link
- * Revision.RevisionDataDeserializer} that must deserialize the {@link
- * Revision#data} from different domain models.
+ * in the [Revision] and extended by domain models in [ ] to make it easier to write the [ ] that must deserialize the [ ][Revision.data] from different domain models.
  */
-public interface RevisionData { }
+interface RevisionData 

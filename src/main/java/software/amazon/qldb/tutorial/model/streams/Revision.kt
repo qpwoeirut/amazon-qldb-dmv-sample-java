@@ -15,134 +15,88 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model.streams
 
-package software.amazon.qldb.tutorial.model.streams;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import software.amazon.qldb.tutorial.model.DriversLicense;
-import software.amazon.qldb.tutorial.model.Person;
-import software.amazon.qldb.tutorial.model.Vehicle;
-import software.amazon.qldb.tutorial.model.VehicleRegistration;
-import software.amazon.qldb.tutorial.qldb.BlockAddress;
-import software.amazon.qldb.tutorial.qldb.RevisionMetadata;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import software.amazon.qldb.tutorial.model.DriversLicense
+import software.amazon.qldb.tutorial.model.Person
+import software.amazon.qldb.tutorial.model.Vehicle
+import software.amazon.qldb.tutorial.model.VehicleRegistration
+import software.amazon.qldb.tutorial.qldb.BlockAddress
+import software.amazon.qldb.tutorial.qldb.RevisionMetadata
+import java.io.IOException
 
 /**
  * Represents a Revision including both user data and metadata.
  */
-public final class Revision {
-    private final BlockAddress blockAddress;
-    private final RevisionMetadata metadata;
-    private final byte[] hash;
-    @JsonDeserialize(using = RevisionDataDeserializer.class)
-    private final RevisionData data;
+class Revision @JsonCreator constructor(
+    @param:JsonProperty("blockAddress") val blockAddress: BlockAddress,
+    @param:JsonProperty("metadata") val metadata: RevisionMetadata,
+    @param:JsonProperty("hash") val hash: ByteArray,
+    @field:JsonDeserialize(using = RevisionDataDeserializer::class) @param:JsonProperty("data") val data: RevisionData
+) {
 
-    @JsonCreator
-    public Revision(@JsonProperty("blockAddress") final BlockAddress blockAddress,
-                    @JsonProperty("metadata") final RevisionMetadata metadata,
-                    @JsonProperty("hash") final byte[] hash,
-                    @JsonProperty("data") final RevisionData data) {
-        this.blockAddress = blockAddress;
-        this.metadata = metadata;
-        this.hash = hash;
-        this.data = data;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+        if (other == null || javaClass != other.javaClass) {
+            return false
+        }
+        val revision = other as Revision
+        if (blockAddress != revision.blockAddress) {
+            return false
+        }
+        if (metadata != revision.metadata) {
+            return false
+        }
+        return if (!hash.contentEquals(revision.hash)) {
+            false
+        } else data == revision.data
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Revision revision = (Revision) o;
-
-        if (!Objects.equals(blockAddress, revision.blockAddress)) {
-            return false;
-        }
-        if (!Objects.equals(metadata, revision.metadata)) {
-            return false;
-        }
-        if (!Arrays.equals(hash, revision.hash)) {
-            return false;
-        }
-        return Objects.equals(data, revision.data);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = blockAddress != null ? blockAddress.hashCode() : 0;
-        result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(hash);
-        result = 31 * result + (data != null ? data.hashCode() : 0);
-        return result;
+    override fun hashCode(): Int {
+        var result = blockAddress.hashCode()
+        result = 31 * result + (metadata.hashCode())
+        result = 31 * result + hash.contentHashCode()
+        result = 31 * result + (data.hashCode())
+        return result
     }
 
     /**
-     * Converts a {@link Revision} object to string.
+     * Converts a [Revision] object to string.
      *
-     * @return the string representation of the {@link Revision} object.
+     * @return the string representation of the [Revision] object.
      */
-    @Override
-    public String toString() {
-        return "Revision{" +
-                "blockAddress=" + blockAddress +
-                ", metadata=" + metadata +
-                ", hash=" + Arrays.toString(hash) +
-                ", data=" + data +
-                '}';
+    override fun toString(): String {
+        return """Revision{
+                |blockAddress=$blockAddress, 
+                |metadata=$metadata, 
+                |hash=${hash.contentToString()}, 
+                |data=$data
+                |}""".trimMargin()
     }
 
-    public BlockAddress getBlockAddress() {
-        return blockAddress;
-    }
-
-    public RevisionMetadata getMetadata() {
-        return metadata;
-    }
-
-    public byte[] getHash() {
-        return hash;
-    }
-
-    public RevisionData getData() {
-        return data;
-    }
-
-    public static class RevisionDataDeserializer extends JsonDeserializer<RevisionData> {
-
-        @Override
-        public RevisionData deserialize(JsonParser jp, DeserializationContext dc) throws IOException {
-            TableInfo tableInfo = (TableInfo) jp.getParsingContext().getParent().getCurrentValue();
-            RevisionData revisionData;
-            switch (tableInfo.getTableName()) {
-                case "VehicleRegistration":
-                    revisionData = jp.readValueAs(VehicleRegistration.class);
-                    break;
-                case "Person":
-                    revisionData = jp.readValueAs(Person.class);
-                    break;
-                case "DriversLicense":
-                    revisionData = jp.readValueAs(DriversLicense.class);
-                    break;
-                case "Vehicle":
-                    revisionData = jp.readValueAs(Vehicle.class);
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported table " + tableInfo.getTableName());
+    class RevisionDataDeserializer : JsonDeserializer<RevisionData>() {
+        @Throws(IOException::class)
+        override fun deserialize(jp: JsonParser, dc: DeserializationContext): RevisionData {
+            val tableInfo = jp.parsingContext.parent.currentValue as TableInfo
+            val revisionData: RevisionData
+            revisionData = when (tableInfo.tableName) {
+                "VehicleRegistration" -> jp.readValueAs(
+                    VehicleRegistration::class.java
+                )
+                "Person" -> jp.readValueAs(Person::class.java)
+                "DriversLicense" -> jp.readValueAs(DriversLicense::class.java)
+                "Vehicle" -> jp.readValueAs(Vehicle::class.java)
+                else -> throw RuntimeException("Unsupported table " + tableInfo.tableName)
             }
-
-            return revisionData;
+            return revisionData
         }
     }
 }

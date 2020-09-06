@@ -15,12 +15,10 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model.streams
 
-package software.amazon.qldb.tutorial.model.streams;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonProperty
+import software.amazon.qldb.tutorial.model.streams.StreamRecord.StreamRecordPayload
 
 /**
  * Represents a revision record on the QLDB stream. A revision details record
@@ -28,52 +26,30 @@ import java.util.Objects;
  * contains all of the attributes from the committed view of the revision, along
  * with the associated table name and table ID.
  */
-public final class RevisionDetailsRecord implements StreamRecord.StreamRecordPayload {
-    private TableInfo tableInfo;
-    private Revision revision;
-
-    public RevisionDetailsRecord(@JsonProperty("tableInfo") TableInfo tableInfo, @JsonProperty("revision") Revision revision) {
-        this.tableInfo = tableInfo;
-        this.revision = revision;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+class RevisionDetailsRecord(
+    @param:JsonProperty("tableInfo") val tableInfo: TableInfo,
+    @param:JsonProperty("revision") val revision: Revision
+) : StreamRecordPayload {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-
-        RevisionDetailsRecord that = (RevisionDetailsRecord) o;
-
-        if (!Objects.equals(tableInfo, that.tableInfo)) {
-            return false;
-        }
-        return Objects.equals(revision, that.revision);
+        val that = other as RevisionDetailsRecord
+        return if (tableInfo != that.tableInfo) {
+            false
+        } else revision == that.revision
     }
 
-    @Override
-    public int hashCode() {
-        int result = tableInfo != null ? tableInfo.hashCode() : 0;
-        result = 31 * result + (revision != null ? revision.hashCode() : 0);
-        return result;
+    override fun hashCode(): Int {
+        var result = tableInfo.hashCode()
+        result = 31 * result + (revision.hashCode())
+        return result
     }
 
-    @Override
-    public String toString() {
-        return "RevisionDetailsRecord{" +
-                "tableInfo=" + tableInfo +
-                ", revision=" + revision +
-                '}';
-    }
-
-    public TableInfo getTableInfo() {
-        return tableInfo;
-    }
-
-    public Revision getRevision() {
-        return revision;
+    override fun toString(): String {
+        return "RevisionDetailsRecord{tableInfo=$tableInfo, revision=$revision}"
     }
 }

@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import org.slf4j.LoggerFactory
 import software.amazon.qldb.tutorial.Constants
 import software.amazon.qldb.tutorial.Verifier
-import software.amazon.qldb.tutorial.qldb.BlockAddress
 import software.amazon.qldb.tutorial.qldb.QldbIonUtils.hashIonValue
 import java.io.IOException
 import java.util.*
@@ -70,7 +69,7 @@ class QldbRevision @JsonCreator constructor(
         return "QldbRevision{" +
                 "blockAddress=" + blockAddress +
                 ", metadata=" + metadata +
-                ", hash=" + Arrays.toString(hash) +
+                ", hash=" + hash.contentToString() +
                 ", data=" + data +
                 '}'
     }
@@ -80,14 +79,14 @@ class QldbRevision @JsonCreator constructor(
      *
      * @return `true` if the two objects are equal, `false` otherwise.
      */
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o !is QldbRevision) {
+        if (other !is QldbRevision) {
             return false
         }
-        val that = o
+        val that = other
         return blockAddress == that.blockAddress && metadata == that.metadata && Arrays.equals(
             hash,
             that.hash

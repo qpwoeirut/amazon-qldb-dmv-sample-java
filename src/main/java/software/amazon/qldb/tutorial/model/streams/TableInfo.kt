@@ -15,66 +15,38 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model.streams
 
-package software.amazon.qldb.tutorial.model.streams;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
- * Represents the table information that goes inside the {@link
- * RevisionDetailsRecord}. It allows the users to deserialize the {@link
- * Revision#data} appropriate to the underlying table.
+ * Represents the table information that goes inside the [ ]. It allows the users to deserialize the [ ][Revision.data] appropriate to the underlying table.
  */
-public final class TableInfo {
-    private String tableId;
-    private String tableName;
-
-    @JsonCreator
-    public TableInfo(@JsonProperty("tableId") String tableId, @JsonProperty("tableName") String tableName) {
-        this.tableId = tableId;
-        this.tableName = tableName;
+class TableInfo @JsonCreator constructor(
+    @param:JsonProperty("tableId") val tableId: String,
+    @param:JsonProperty("tableName") val tableName: String
+) {
+    override fun toString(): String {
+        return "TableInfo{tableId='$tableId', tableName='$tableName'}"
     }
 
-    public String getTableName() {
-        return tableName;
-    }
-
-    public String getTableId() {
-        return tableId;
-    }
-
-    @Override
-    public String toString() {
-        return "TableInfo{" +
-                "tableId='" + tableId + '\'' +
-                ", tableName='" + tableName + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-
-        TableInfo tableInfo = (TableInfo) o;
-
-        if (!Objects.equals(tableId, tableInfo.tableId)) {
-            return false;
-        }
-        return Objects.equals(tableName, tableInfo.tableName);
+        val tableInfo = other as TableInfo
+        return if (tableId != tableInfo.tableId) {
+            false
+        } else tableName == tableInfo.tableName
     }
 
-    @Override
-    public int hashCode() {
-        int result = tableId != null ? tableId.hashCode() : 0;
-        result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
-        return result;
+    override fun hashCode(): Int {
+        var result = tableId.hashCode()
+        result = 31 * result + tableName.hashCode()
+        return result
     }
 }

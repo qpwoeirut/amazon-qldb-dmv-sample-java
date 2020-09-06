@@ -15,160 +15,92 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial.model.streams
 
-package software.amazon.qldb.tutorial.model.streams;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers;
-import software.amazon.qldb.tutorial.qldb.BlockAddress;
-import software.amazon.qldb.tutorial.qldb.TransactionInfo;
-
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers.IonTimestampJavaDateSerializer
+import software.amazon.qldb.tutorial.model.streams.StreamRecord.StreamRecordPayload
+import software.amazon.qldb.tutorial.qldb.BlockAddress
+import software.amazon.qldb.tutorial.qldb.TransactionInfo
+import java.util.*
 
 /**
  * Represents a summary for a Journal Block that was recorded after executing a
  * transaction in the ledger.
  */
-public final class BlockSummaryRecord implements StreamRecord.StreamRecordPayload {
-    private BlockAddress blockAddress;
-    private String transactionId;
-    @JsonSerialize(using = IonTimestampSerializers.IonTimestampJavaDateSerializer.class)
-    private Date blockTimestamp;
-    private byte[] blockHash;
-    private byte[] entriesHash;
-    private byte[] previousBlockHash;
-    private byte[][] entriesHashList;
-    private TransactionInfo transactionInfo;
-    private List<RevisionSummary> revisionSummaries;
+class BlockSummaryRecord @JsonCreator constructor(
+    @param:JsonProperty("blockAddress") val blockAddress: BlockAddress,
+    @param:JsonProperty("transactionId") val transactionId: String,
+    @field:JsonSerialize(using = IonTimestampJavaDateSerializer::class) @param:JsonProperty("blockTimestamp") val blockTimestamp: Date,
+    @param:JsonProperty("blockHash") val blockHash: ByteArray,
+    @param:JsonProperty("entriesHash") val entriesHash: ByteArray,
+    @param:JsonProperty("previousBlockHash") val previousBlockHash: ByteArray,
+    @param:JsonProperty("entriesHashList") val entriesHashList: Array<ByteArray>,
+    @param:JsonProperty("transactionInfo") val transactionInfo: TransactionInfo,
+    @param:JsonProperty("revisionSummaries") val revisionSummaries: List<RevisionSummary>
+) : StreamRecordPayload {
 
-    @JsonCreator
-    public BlockSummaryRecord(@JsonProperty("blockAddress") final BlockAddress blockAddress,
-                              @JsonProperty("transactionId") final String transactionId,
-                              @JsonProperty("blockTimestamp") final Date blockTimestamp,
-                              @JsonProperty("blockHash") final byte[] blockHash,
-                              @JsonProperty("entriesHash") final byte[] entriesHash,
-                              @JsonProperty("previousBlockHash") final byte[] previousBlockHash,
-                              @JsonProperty("entriesHashList") final byte[][] entriesHashList,
-                              @JsonProperty("transactionInfo") final TransactionInfo transactionInfo,
-                              @JsonProperty("revisionSummaries") final List<RevisionSummary> revisionSummaries) {
-        this.blockAddress = blockAddress;
-        this.transactionId = transactionId;
-        this.blockTimestamp = blockTimestamp;
-        this.blockHash = blockHash;
-        this.entriesHash = entriesHash;
-        this.previousBlockHash = previousBlockHash;
-        this.entriesHashList = entriesHashList;
-        this.transactionInfo = transactionInfo;
-        this.revisionSummaries = revisionSummaries;
-    }
-
-    @Override
-    public String toString() {
-        return "JournalBlock{"
+    override fun toString(): String {
+        return ("JournalBlock{"
                 + "blockAddress=" + blockAddress
                 + ", transactionId='" + transactionId + '\''
                 + ", blockTimestamp=" + blockTimestamp
-                + ", blockHash=" + Arrays.toString(blockHash)
-                + ", entriesHash=" + Arrays.toString(entriesHash)
-                + ", previousBlockHash=" + Arrays.toString(previousBlockHash)
-                + ", entriesHashList=" + Arrays.stream(entriesHashList).map(Arrays::toString).collect(Collectors.toList())
+                + ", blockHash=" + blockHash.contentToString()
+                + ", entriesHash=" + entriesHash.contentToString()
+                + ", previousBlockHash=" + previousBlockHash.contentToString()
+                + ", entriesHashList=" + entriesHashList.map { it.contentToString() }
                 + ", transactionInfo=" + transactionInfo
                 + ", revisionSummaries=" + revisionSummaries
-                + '}';
+                + '}')
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-
-        BlockSummaryRecord that = (BlockSummaryRecord) o;
-
-        if (!Objects.equals(blockAddress, that.blockAddress)) {
-            return false;
+        val that = other as BlockSummaryRecord
+        if (blockAddress != that.blockAddress) {
+            return false
         }
-        if (!Objects.equals(transactionId, that.transactionId)) {
-            return false;
+        if (transactionId != that.transactionId) {
+            return false
         }
-        if (!Objects.equals(blockTimestamp, that.blockTimestamp)) {
-            return false;
+        if (blockTimestamp != that.blockTimestamp) {
+            return false
         }
-        if (!Arrays.equals(blockHash, that.blockHash)) {
-            return false;
+        if (!blockHash.contentEquals(that.blockHash)) {
+            return false
         }
-        if (!Arrays.equals(entriesHash, that.entriesHash)) {
-            return false;
+        if (!entriesHash.contentEquals(that.entriesHash)) {
+            return false
         }
-        if (!Arrays.equals(previousBlockHash, that.previousBlockHash)) {
-            return false;
+        if (!previousBlockHash.contentEquals(that.previousBlockHash)) {
+            return false
         }
-        if (!Arrays.deepEquals(entriesHashList, that.entriesHashList)) {
-            return false;
+        if (!entriesHashList.contentDeepEquals(that.entriesHashList)) {
+            return false
         }
-        if (!Objects.equals(transactionInfo, that.transactionInfo)) {
-            return false;
+        if (transactionInfo != that.transactionInfo) {
+            return false
         }
-        return Objects.equals(revisionSummaries, that.revisionSummaries);
+        return revisionSummaries == that.revisionSummaries
     }
 
-    @Override
-    public int hashCode() {
-        int result = blockAddress != null ? blockAddress.hashCode() : 0;
-        result = 31 * result + (transactionId != null ? transactionId.hashCode() : 0);
-        result = 31 * result + (blockTimestamp != null ? blockTimestamp.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(blockHash);
-        result = 31 * result + Arrays.hashCode(entriesHash);
-        result = 31 * result + Arrays.hashCode(previousBlockHash);
-        result = 31 * result + Arrays.deepHashCode(entriesHashList);
-        result = 31 * result + (transactionInfo != null ? transactionInfo.hashCode() : 0);
-        result = 31 * result + (revisionSummaries != null ? revisionSummaries.hashCode() : 0);
-        return result;
+    override fun hashCode(): Int {
+        var result = blockAddress.hashCode()
+        result = 31 * result + transactionId.hashCode()
+        result = 31 * result + blockTimestamp.hashCode()
+        result = 31 * result + blockHash.contentHashCode()
+        result = 31 * result + entriesHash.contentHashCode()
+        result = 31 * result + previousBlockHash.contentHashCode()
+        result = 31 * result + entriesHashList.contentDeepHashCode()
+        result = 31 * result + transactionInfo.hashCode()
+        result = 31 * result + revisionSummaries.hashCode()
+        return result
     }
-
-    public BlockAddress getBlockAddress() {
-        return blockAddress;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public Date getBlockTimestamp() {
-        return blockTimestamp;
-    }
-
-    public byte[] getBlockHash() {
-        return blockHash;
-    }
-
-    public byte[] getEntriesHash() {
-        return entriesHash;
-    }
-
-    public byte[] getPreviousBlockHash() {
-        return previousBlockHash;
-    }
-
-    public byte[][] getEntriesHashList() {
-        return entriesHashList;
-    }
-
-    public TransactionInfo getTransactionInfo() {
-        return transactionInfo;
-    }
-
-    public List<RevisionSummary> getRevisionSummaries() {
-        return revisionSummaries;
-    }
-
 }
