@@ -15,22 +15,16 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazon.ion.IonValue;
-
-import software.amazon.qldb.Result;
-import software.amazon.qldb.TransactionExecutor;
-import software.amazon.qldb.tutorial.model.SampleData;
-import software.amazon.qldb.tutorial.model.VehicleRegistration;
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.ConnectToLedger.driver
+import software.amazon.qldb.tutorial.model.SampleData
+import software.amazon.qldb.tutorial.model.VehicleRegistration.Companion.getDocumentIdByVin
+import java.io.IOException
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 /**
  * Query a table's history for a particular set of documents.
@@ -38,44 +32,44 @@ import software.amazon.qldb.tutorial.model.VehicleRegistration;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class QueryHistory {
-    public static final Logger log = LoggerFactory.getLogger(QueryHistory.class);
-    private static final int THREE_MONTHS = 90;
-
-    private QueryHistory() { }
+object QueryHistory {
+    val log = LoggerFactory.getLogger(QueryHistory::class.java)
+    private const val THREE_MONTHS = 90
 
     /**
      * In this example, query the 'VehicleRegistration' history table to find all previous primary owners for a VIN.
      *
      * @param txn
-     *              The {@link TransactionExecutor} for lambda execute.
+     * The [TransactionExecutor] for lambda execute.
      * @param vin
-     *              VIN to find previous primary owners for.
+     * VIN to find previous primary owners for.
      * @param query
-     *              The query to find previous primary owners.
-     * @throws IllegalStateException if failed to convert document ID to an {@link IonValue}.
+     * The query to find previous primary owners.
+     * @throws IllegalStateException if failed to convert document ID to an [IonValue].
      */
-    public static void previousPrimaryOwners(final TransactionExecutor txn, final String vin, final String query) {
+    private fun previousPrimaryOwners(txn: TransactionExecutor, vin: String, query: String) {
         try {
-            final String docId = VehicleRegistration.getDocumentIdByVin(txn, vin);
-
-            log.info("Querying the 'VehicleRegistration' table's history using VIN: {}...", vin);
-            final Result result = txn.execute(query, Constants.MAPPER.writeValueAsIonValue(docId));
-            ScanTable.printDocuments(result);
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+            val docId = getDocumentIdByVin(txn, vin!!)
+            log.info("Querying the 'VehicleRegistration' table's history using VIN: {}...", vin)
+            val result = txn.execute(query, Constants.MAPPER.writeValueAsIonValue(docId))
+            ScanTable.printDocuments(result)
+        } catch (ioe: IOException) {
+            throw IllegalStateException(ioe)
         }
     }
 
-    public static void main(final String... args) {
-        final String threeMonthsAgo = Instant.now().minus(THREE_MONTHS, ChronoUnit.DAYS).toString();
-        final String query = String.format("SELECT data.Owners.PrimaryOwner, metadata.version "
-                                           + "FROM history(VehicleRegistration, `%s`) "
-                                           + "AS h WHERE h.metadata.id = ?", threeMonthsAgo);
-        ConnectToLedger.getDriver().execute(txn -> {
-            final String vin = SampleData.VEHICLES.get(0).getVin();
-            previousPrimaryOwners(txn, vin, query);
-        });
-        log.info("Successfully queried history.");
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val threeMonthsAgo = Instant.now().minus(THREE_MONTHS.toLong(), ChronoUnit.DAYS).toString()
+        val query = String.format(
+            "SELECT data.Owners.PrimaryOwner, metadata.version "
+                    + "FROM history(VehicleRegistration, `%s`) "
+                    + "AS h WHERE h.metadata.id = ?", threeMonthsAgo
+        )
+        driver.execute { txn ->
+            val vin = SampleData.VEHICLES[0].vin
+            previousPrimaryOwners(txn, vin, query)
+        }
+        log.info("Successfully queried history.")
     }
 }

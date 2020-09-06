@@ -15,25 +15,12 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.AmazonQLDB;
-import com.amazonaws.services.qldb.model.CreateLedgerRequest;
-import com.amazonaws.services.qldb.model.CreateLedgerResult;
-import com.amazonaws.services.qldb.model.ListTagsForResourceRequest;
-import com.amazonaws.services.qldb.model.ListTagsForResourceResult;
-import com.amazonaws.services.qldb.model.PermissionsMode;
-import com.amazonaws.services.qldb.model.TagResourceRequest;
-import com.amazonaws.services.qldb.model.UntagResourceRequest;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.amazonaws.services.qldb.model.*
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.tutorial.CreateLedger.waitForActive
+import java.util.*
 
 /**
  * Tagging and un-tagging resources, including tag on create.
@@ -41,117 +28,102 @@ import org.slf4j.LoggerFactory;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class TagResource {
-    public static final Logger log = LoggerFactory.getLogger(TagResource.class);
-    public static final String LEDGER_NAME = Constants.LEDGER_NAME_WITH_TAGS;
-    public static AmazonQLDB client = CreateLedger.getClient();
-    public static Map<String, String> CREATE_TAGS;
-    public static Map<String, String> ADD_TAGS;
-    public static List<String> REMOVE_TAGS;
+object TagResource {
+    val log = LoggerFactory.getLogger(TagResource::class.java)
+    const val LEDGER_NAME = Constants.LEDGER_NAME_WITH_TAGS
+    val client = CreateLedger.client
 
-    private TagResource() { }
-
-    static {
-        CREATE_TAGS = new HashMap<>();
-        CREATE_TAGS.put("IsTest", "true");
-        CREATE_TAGS.put("Domain", "Test");
-
-        REMOVE_TAGS = new ArrayList<>();
-        REMOVE_TAGS.add("IsTest");
-
-        ADD_TAGS = new HashMap<>();
-        ADD_TAGS.put("Domain", "Prod");
-    }
+    private val CREATE_TAGS = mapOf(
+        "IsTest" to "true",
+        "Domain" to "Test"
+    )
+    private val ADD_TAGS = mapOf("Domain" to "Prod")
+    private val REMOVE_TAGS = listOf("IsTest")
 
     /**
      * Create a ledger with the given tags.
      *
      * @param ledgerName
-     *              Name of the ledger to be created.
+     * Name of the ledger to be created.
      * @param tags
-     *              The map of key-value pairs to create the ledger with.
-     * @return {@link CreateLedgerResult}.
+     * The map of key-value pairs to create the ledger with.
+     * @return [CreateLedgerResult].
      */
-    public static CreateLedgerResult createWithTags(final String ledgerName, final Map<String, String> tags) {
-        log.info("Let's create the ledger with name: {}...", ledgerName);
-        CreateLedgerRequest request = new CreateLedgerRequest()
-                .withName(ledgerName)
-                .withTags(tags)
-                .withPermissionsMode(PermissionsMode.ALLOW_ALL);
-        CreateLedgerResult result = client.createLedger(request);
-        log.info("Success. Ledger state: {}", result.getState());
-        return result;
+    private fun createWithTags(ledgerName: String, tags: Map<String, String>): CreateLedgerResult {
+        log.info("Let's create the ledger with name: {}...", ledgerName)
+        val request = CreateLedgerRequest()
+            .withName(ledgerName)
+            .withTags(tags)
+            .withPermissionsMode(PermissionsMode.ALLOW_ALL)
+        val result = client.createLedger(request)
+        log.info("Success. Ledger state: {}", result.state)
+        return result
     }
 
     /**
      * Add tags to a resource.
      *
      * @param resourceArn
-     *              The Amazon Resource Name (ARN) of the ledger to which to add the tags.
+     * The Amazon Resource Name (ARN) of the ledger to which to add the tags.
      * @param tags
-     *              The map of key-value pairs to add to a ledger.
+     * The map of key-value pairs to add to a ledger.
      */
-    public static void tagResource(final String resourceArn, final Map<String, String> tags) {
-        log.info("Let's add tags {} for resource with arn: {}...", tags, resourceArn);
-        TagResourceRequest request = new TagResourceRequest()
-                .withResourceArn(resourceArn)
-                .withTags(tags);
-        client.tagResource(request);
-        log.info("Successfully added tags.");
+    private fun tagResource(resourceArn: String, tags: Map<String, String>) {
+        log.info("Let's add tags {} for resource with arn: {}...", tags, resourceArn)
+        val request = TagResourceRequest()
+            .withResourceArn(resourceArn)
+            .withTags(tags)
+        client.tagResource(request)
+        log.info("Successfully added tags.")
     }
 
     /**
      * Remove one or more tags from the specified QLDB resource.
      *
      * @param resourceArn
-     *              The Amazon Resource Name (ARN) of the ledger from which to remove the tags.
+     * The Amazon Resource Name (ARN) of the ledger from which to remove the tags.
      * @param tagKeys
-     *              The list of tag keys to remove.
+     * The list of tag keys to remove.
      */
-    public static void untagResource(final String resourceArn, final List<String> tagKeys) {
-        log.info("Let's remove tags {} for resource with arn: {}...", tagKeys, resourceArn);
-        UntagResourceRequest request = new UntagResourceRequest()
-                .withResourceArn(resourceArn)
-                .withTagKeys(tagKeys);
-        client.untagResource(request);
-        log.info("Successfully removed tags.");
+    private fun untagResource(resourceArn: String, tagKeys: List<String>) {
+        log.info("Let's remove tags {} for resource with arn: {}...", tagKeys, resourceArn)
+        val request = UntagResourceRequest()
+            .withResourceArn(resourceArn)
+            .withTagKeys(tagKeys)
+        client.untagResource(request)
+        log.info("Successfully removed tags.")
     }
 
     /**
      * Returns all tags for a specified Amazon QLDB resource.
      *
      * @param resourceArn
-     *              The Amazon Resource Name (ARN) for which to list tags off.
-     * @return {@link ListTagsForResourceResult}.
+     * The Amazon Resource Name (ARN) for which to list tags off.
+     * @return [ListTagsForResourceResult].
      */
-    public static ListTagsForResourceResult listTags(final String resourceArn) {
-        log.info("Let's list the tags for resource with arn: {}...", resourceArn);
-        ListTagsForResourceRequest request = new ListTagsForResourceRequest()
-                .withResourceArn(resourceArn);
-        ListTagsForResourceResult result = client.listTagsForResource(request);
-        log.info("Success. Tags: {}", result.getTags());
-        return result;
+    private fun listTags(resourceArn: String): ListTagsForResourceResult {
+        log.info("Let's list the tags for resource with arn: {}...", resourceArn)
+        val request = ListTagsForResourceRequest()
+            .withResourceArn(resourceArn)
+        val result = client.listTagsForResource(request)
+        log.info("Success. Tags: {}", result.tags)
+        return result
     }
 
-    public static void main(final String... args) throws Exception {
+    @Throws(Exception::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-            String resourceArn = createWithTags(LEDGER_NAME, CREATE_TAGS).getArn();
-
-            CreateLedger.waitForActive(LEDGER_NAME);
-
-            listTags(resourceArn);
-
-            untagResource(resourceArn, REMOVE_TAGS);
-
-            listTags(resourceArn);
-
-            tagResource(resourceArn, ADD_TAGS);
-
-            listTags(resourceArn);
-
-        } catch (Exception e) {
-            log.error("Unable to tag resources!", e);
-            throw e;
+            val resourceArn = createWithTags(LEDGER_NAME, CREATE_TAGS).arn
+            waitForActive(LEDGER_NAME)
+            listTags(resourceArn)
+            untagResource(resourceArn, REMOVE_TAGS)
+            listTags(resourceArn)
+            tagResource(resourceArn, ADD_TAGS)
+            listTags(resourceArn)
+        } catch (e: Exception) {
+            log.error("Unable to tag resources!", e)
+            throw e
         }
     }
 }

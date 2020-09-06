@@ -15,117 +15,106 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazonaws.util.Base64;
-
-import software.amazon.qldb.tutorial.qldb.Proof;
+import com.amazonaws.util.Base64
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.tutorial.qldb.Proof
+import software.amazon.qldb.tutorial.qldb.Proof.Companion.fromBlob
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.util.*
+import java.util.concurrent.ThreadLocalRandom
+import java.util.function.BinaryOperator
+import kotlin.experimental.xor
 
 /**
  * Encapsulates the logic to verify the integrity of revisions or blocks in a QLDB ledger.
  *
- * The main entry point is {@link #verify(byte[], byte[], String)}.
+ * The main entry point is [.verify].
  *
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class Verifier {
-    public static final Logger log = LoggerFactory.getLogger(Verifier.class);
-    private static final int HASH_LENGTH = 32;
-    private static final int UPPER_BOUND = 8;
+object Verifier {
+    val log = LoggerFactory.getLogger(Verifier::class.java)
+    private const val HASH_LENGTH = 32
+    private const val UPPER_BOUND = 8
 
     /**
-     * Compares two hashes by their <em>signed</em> byte values in little-endian order.
+     * Compares two hashes by their *signed* byte values in little-endian order.
      */
-    private static Comparator<byte[]> hashComparator = (h1, h2) -> {
-        if (h1.length != HASH_LENGTH || h2.length != HASH_LENGTH) {
-            throw new IllegalArgumentException("Invalid hash.");
-        }
-        for (int i = h1.length - 1; i >= 0; i--) {
-            int byteEqual = Byte.compare(h1[i], h2[i]);
+    private val hashComparator = Comparator { h1: ByteArray, h2: ByteArray ->
+        require(!(h1.size != HASH_LENGTH || h2.size != HASH_LENGTH)) { "Invalid hash." }
+        var i = h1.size - 1
+        while (i >= 0) {
+            val byteEqual = java.lang.Byte.compare(h1[i], h2[i])
             if (byteEqual != 0) {
-                return byteEqual;
+                return@Comparator byteEqual
             }
+            i--
         }
-
-        return 0;
-    };
-
-    private Verifier() { }
+        0
+    }
 
     /**
      * Verify the integrity of a document with respect to a QLDB ledger digest.
      *
      * The verification algorithm includes the following steps:
      *
-     * 1. {@link #buildCandidateDigest(Proof, byte[])} build the candidate digest from the internal hashes
-     * in the {@link Proof}.
-     * 2. Check that the {@code candidateLedgerDigest} is equal to the {@code ledgerDigest}.
+     * 1. [.buildCandidateDigest] build the candidate digest from the internal hashes
+     * in the [Proof].
+     * 2. Check that the `candidateLedgerDigest` is equal to the `ledgerDigest`.
      *
      * @param documentHash
-     *              The hash of the document to be verified.
+     * The hash of the document to be verified.
      * @param digest
-     *              The QLDB ledger digest. This digest should have been retrieved using
-     *              {@link com.amazonaws.services.qldb.AmazonQLDB#getDigest}
+     * The QLDB ledger digest. This digest should have been retrieved using
+     * [com.amazonaws.services.qldb.AmazonQLDB.getDigest]
      * @param proofBlob
-     *              The ion encoded bytes representing the {@link Proof} associated with the supplied
-     *              {@code digestTipAddress} and {@code address} retrieved using
-     *              {@link com.amazonaws.services.qldb.AmazonQLDB#getRevision}.
-     * @return {@code true} if the record is verified or {@code false} if it is not verified.
+     * The ion encoded bytes representing the [Proof] associated with the supplied
+     * `digestTipAddress` and `address` retrieved using
+     * [com.amazonaws.services.qldb.AmazonQLDB.getRevision].
+     * @return `true` if the record is verified or `false` if it is not verified.
      */
-    public static boolean verify(
-            final byte[] documentHash,
-            final byte[] digest,
-            final String proofBlob
-    ) {
-        Proof proof = Proof.fromBlob(proofBlob);
-
-        byte[] candidateDigest = buildCandidateDigest(proof, documentHash);
-
-        return Arrays.equals(digest, candidateDigest);
+    fun verify(
+        documentHash: ByteArray,
+        digest: ByteArray,
+        proofBlob: String
+    ): Boolean {
+        val proof = fromBlob(proofBlob)
+        val candidateDigest = buildCandidateDigest(proof, documentHash)
+        return digest.contentEquals(candidateDigest)
     }
 
     /**
-     * Build the candidate digest representing the entire ledger from the internal hashes of the {@link Proof}.
+     * Build the candidate digest representing the entire ledger from the internal hashes of the [Proof].
      *
      * @param proof
-     *              A Java representation of {@link Proof}
-     *              returned from {@link com.amazonaws.services.qldb.AmazonQLDB#getRevision}.
+     * A Java representation of [Proof]
+     * returned from [com.amazonaws.services.qldb.AmazonQLDB.getRevision].
      * @param leafHash
-     *              Leaf hash to build the candidate digest with.
+     * Leaf hash to build the candidate digest with.
      * @return a byte array of the candidate digest.
      */
-    private static byte[] buildCandidateDigest(final Proof proof, final byte[] leafHash) {
-        return calculateRootHashFromInternalHashes(proof.getInternalHashes(), leafHash);
+    private fun buildCandidateDigest(proof: Proof, leafHash: ByteArray): ByteArray {
+        return calculateRootHashFromInternalHashes(proof.internalHashes, leafHash)
     }
 
     /**
-     * Get a new instance of {@link MessageDigest} using the SHA-256 algorithm.
+     * Get a new instance of [MessageDigest] using the SHA-256 algorithm.
      *
-     * @return an instance of {@link MessageDigest}.
+     * @return an instance of [MessageDigest].
      * @throws IllegalStateException if the algorithm is not available on the current JVM.
      */
-    static MessageDigest newMessageDigest() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            log.error("Failed to create SHA-256 MessageDigest", e);
-            throw new IllegalStateException("SHA-256 message digest is unavailable", e);
+    private fun newMessageDigest(): MessageDigest {
+        return try {
+            MessageDigest.getInstance("SHA-256")
+        } catch (e: NoSuchAlgorithmException) {
+            log.error("Failed to create SHA-256 MessageDigest", e)
+            throw IllegalStateException("SHA-256 message digest is unavailable", e)
         }
     }
 
@@ -134,44 +123,43 @@ public final class Verifier {
      * hash of the concatenated array.
      *
      * @param h1
-     *              Byte array containing one of the hashes to compare.
+     * Byte array containing one of the hashes to compare.
      * @param h2
-     *              Byte array containing one of the hashes to compare.
+     * Byte array containing one of the hashes to compare.
      * @return the concatenated array of hashes.
      */
-    public static byte[] dot(final byte[] h1, final byte[] h2) {
-        if (h1.length == 0) {
-            return h2;
+    fun dot(h1: ByteArray, h2: ByteArray): ByteArray {
+        if (h1.isEmpty()) {
+            return h2
         }
-        if (h2.length == 0) {
-            return h1;
+        if (h2.isEmpty()) {
+            return h1
         }
-        byte[] concatenated = new byte[h1.length + h2.length];
+        val concatenated = ByteArray(h1.size + h2.size)
         if (hashComparator.compare(h1, h2) < 0) {
-            System.arraycopy(h1, 0, concatenated, 0, h1.length);
-            System.arraycopy(h2, 0, concatenated, h1.length, h2.length);
+            System.arraycopy(h1, 0, concatenated, 0, h1.size)
+            System.arraycopy(h2, 0, concatenated, h1.size, h2.size)
         } else {
-            System.arraycopy(h2, 0, concatenated, 0, h2.length);
-            System.arraycopy(h1, 0, concatenated, h2.length, h1.length);
+            System.arraycopy(h2, 0, concatenated, 0, h2.size)
+            System.arraycopy(h1, 0, concatenated, h2.size, h1.size)
         }
-        MessageDigest messageDigest = newMessageDigest();
-        messageDigest.update(concatenated);
-
-        return messageDigest.digest();
+        val messageDigest = newMessageDigest()
+        messageDigest.update(concatenated)
+        return messageDigest.digest()
     }
 
     /**
-     * Starting with the provided {@code leafHash} combined with the provided {@code internalHashes}
+     * Starting with the provided `leafHash` combined with the provided `internalHashes`
      * pairwise until only the root hash remains.
      *
      * @param internalHashes
-     *              Internal hashes of Merkle tree.
+     * Internal hashes of Merkle tree.
      * @param leafHash
-     *              Leaf hashes of Merkle tree.
+     * Leaf hashes of Merkle tree.
      * @return the root hash.
      */
-    private static byte[] calculateRootHashFromInternalHashes(final List<byte[]> internalHashes, final byte[] leafHash) {
-        return internalHashes.stream().reduce(leafHash, Verifier::dot);
+    private fun calculateRootHashFromInternalHashes(internalHashes: List<ByteArray>, leafHash: ByteArray): ByteArray {
+        return internalHashes.stream().reduce(leafHash, Verifier::dot)
     }
 
     /**
@@ -179,72 +167,67 @@ public final class Verifier {
      * QLDB's verification features.
      *
      * @param original
-     *              The original byte array.
+     * The original byte array.
      * @return the altered byte array with a single random bit changed.
      */
-    public static byte[] flipRandomBit(final byte[] original) {
-        if (original.length == 0) {
-            throw new IllegalArgumentException("Array cannot be empty!");
-        }
-        int alteredPosition = ThreadLocalRandom.current().nextInt(original.length);
-        int b = ThreadLocalRandom.current().nextInt(UPPER_BOUND);
-        byte[] altered = new byte[original.length];
-        System.arraycopy(original, 0, altered, 0, original.length);
-        altered[alteredPosition] = (byte) (altered[alteredPosition] ^ (1 << b));
-        return altered;
+    fun flipRandomBit(original: ByteArray): ByteArray {
+        require(original.isNotEmpty()) { "Array cannot be empty!" }
+        val alteredPosition = ThreadLocalRandom.current().nextInt(original.size)
+        val b = ThreadLocalRandom.current().nextInt(UPPER_BOUND)
+        val altered = ByteArray(original.size)
+        System.arraycopy(original, 0, altered, 0, original.size)
+        altered[alteredPosition] = (altered[alteredPosition] xor ((1 shl b).toByte()))
+        return altered
     }
 
-    public static String toBase64(byte[] arr) {
-        return new String(Base64.encode(arr), StandardCharsets.UTF_8);
+    fun toBase64(arr: ByteArray): String {
+        return String(Base64.encode(arr), StandardCharsets.UTF_8)
     }
 
     /**
-     * Convert a {@link ByteBuffer} into byte array.
+     * Convert a [ByteBuffer] into byte array.
      *
      * @param buffer
-     *              The {@link ByteBuffer} to convert.
+     * The [ByteBuffer] to convert.
      * @return the converted byte array.
      */
-    public static byte[] convertByteBufferToByteArray(final ByteBuffer buffer) {
-        byte[] arr = new byte[buffer.remaining()];
-        buffer.get(arr);
-        return arr;
+    fun convertByteBufferToByteArray(buffer: ByteBuffer): ByteArray {
+        val arr = ByteArray(buffer.remaining())
+        buffer[arr]
+        return arr
     }
 
     /**
      * Calculates the root hash from a list of hashes that represent the base of a Merkle tree.
      *
      * @param hashes
-     *              The list of byte arrays representing hashes making up base of a Merkle tree.
+     * The list of byte arrays representing hashes making up base of a Merkle tree.
      * @return a byte array that is the root hash of the given list of hashes.
      */
-    public static byte[] calculateMerkleTreeRootHash(List<byte[]> hashes) {
+    fun calculateMerkleTreeRootHash(hashes: List<ByteArray>): ByteArray {
         if (hashes.isEmpty()) {
-            return new byte[0];
+            return ByteArray(0)
         }
-
-        List<byte[]> remaining = combineLeafHashes(hashes);
-        while (remaining.size() > 1) {
-            remaining = combineLeafHashes(remaining);
+        var remaining = combineLeafHashes(hashes)
+        while (remaining.size > 1) {
+            remaining = combineLeafHashes(remaining)
         }
-        return remaining.get(0);
+        return remaining[0]
     }
 
-    private static List<byte[]> combineLeafHashes(List<byte[]> hashes) {
-        List<byte[]> combinedHashes = new ArrayList<>();
-        Iterator<byte[]> it = hashes.stream().iterator();
-
+    private fun combineLeafHashes(hashes: List<ByteArray>): List<ByteArray> {
+        val combinedHashes: MutableList<ByteArray> = ArrayList()
+        val it = hashes.stream().iterator()
         while (it.hasNext()) {
-            byte[] left = it.next();
+            val left = it.next()
             if (it.hasNext()) {
-                byte[] right = it.next();
-                byte[] combined = dot(left, right);
-                combinedHashes.add(combined);
+                val right = it.next()
+                val combined = dot(left, right)
+                combinedHashes.add(combined)
             } else {
-                combinedHashes.add(left);
+                combinedHashes.add(left)
             }
         }
-
-        return combinedHashes;
+        return combinedHashes
     }
 }

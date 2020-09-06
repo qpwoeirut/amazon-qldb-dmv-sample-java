@@ -15,24 +15,20 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import com.amazonaws.services.qldb.model.ExportJournalToS3Result;
-import com.amazonaws.services.qldb.model.S3EncryptionConfiguration;
-import com.amazonaws.services.qldb.model.S3ObjectEncryptionType;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import software.amazon.qldb.tutorial.qldb.JournalBlock;
+import com.amazonaws.services.qldb.model.S3EncryptionConfiguration
+import com.amazonaws.services.qldb.model.S3ObjectEncryptionType
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder
+import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.tutorial.DescribeJournalExport.describeExport
+import software.amazon.qldb.tutorial.ExportJournal.createJournalExportAndAwaitCompletion
+import software.amazon.qldb.tutorial.JournalS3ExportReader.readExport
+import software.amazon.qldb.tutorial.qldb.JournalBlock
+import java.time.Instant
+import java.util.*
 
 /**
  * Validate the hash chain of a QLDB ledger by stepping through its S3 export.
@@ -44,11 +40,9 @@ import software.amazon.qldb.tutorial.qldb.JournalBlock;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class ValidateQldbHashChain {
-    public static final Logger log = LoggerFactory.getLogger(ValidateQldbHashChain.class);
-    private static final int TIME_SKEW = 20;
-
-    private ValidateQldbHashChain() { }
+object ValidateQldbHashChain {
+    val log = LoggerFactory.getLogger(ValidateQldbHashChain::class.java)
+    private const val TIME_SKEW = 20
 
     /**
      * Export journal contents to a S3 bucket.
@@ -56,66 +50,75 @@ public final class ValidateQldbHashChain {
      * @return the ExportId of the journal export.
      * @throws InterruptedException if the thread is interrupted while waiting for export to complete.
      */
-    private static String createExport() throws InterruptedException {
-        String accountId = AWSSecurityTokenServiceClientBuilder.defaultClient()
-            .getCallerIdentity(new GetCallerIdentityRequest()).getAccount();
-        String bucketName = Constants.JOURNAL_EXPORT_S3_BUCKET_NAME_PREFIX + "-" + accountId;
-        String prefix = Constants.LEDGER_NAME + "-" + Instant.now().getEpochSecond() + "/";
-
-        S3EncryptionConfiguration encryptionConfiguration = new S3EncryptionConfiguration()
-                .withObjectEncryptionType(S3ObjectEncryptionType.SSE_S3);
-        ExportJournalToS3Result exportJournalToS3Result = 
-            ExportJournal.createJournalExportAndAwaitCompletion(Constants.LEDGER_NAME, 
-                    bucketName, prefix, null, encryptionConfiguration, ExportJournal.DEFAULT_EXPORT_TIMEOUT_MS);
-
-        return exportJournalToS3Result.getExportId();
+    @Throws(InterruptedException::class)
+    private fun createExport(): String {
+        val accountId = AWSSecurityTokenServiceClientBuilder.defaultClient()
+            .getCallerIdentity(GetCallerIdentityRequest()).account
+        val bucketName = Constants.JOURNAL_EXPORT_S3_BUCKET_NAME_PREFIX + "-" + accountId
+        val prefix = Constants.LEDGER_NAME + "-" + Instant.now().epochSecond + "/"
+        val encryptionConfiguration = S3EncryptionConfiguration()
+            .withObjectEncryptionType(S3ObjectEncryptionType.SSE_S3)
+        val exportJournalToS3Result = createJournalExportAndAwaitCompletion(
+            Constants.LEDGER_NAME,
+            bucketName, prefix, null, encryptionConfiguration, ExportJournal.DEFAULT_EXPORT_TIMEOUT_MS
+        )
+        return exportJournalToS3Result.exportId
     }
 
     /**
-     * Validates that the chain hash on the {@link JournalBlock} is valid.
+     * Validates that the chain hash on the [JournalBlock] is valid.
      *
      * @param journalBlocks
-     *              {@link JournalBlock} containing hashes to validate.
+     * [JournalBlock] containing hashes to validate.
      * @throws IllegalStateException if previous block hash does not match.
      */
-    public static void verify(final List<JournalBlock> journalBlocks) {
-        if (journalBlocks.size() == 0) {
-            return;
+    @JvmStatic
+    fun verify(journalBlocks: List<JournalBlock>) {
+        if (journalBlocks.isEmpty()) {
+            return
         }
-
-        journalBlocks.stream().reduce(null, (previousJournalBlock, journalBlock) -> {
-            journalBlock.verifyBlockHash();
-            if (previousJournalBlock == null) { return journalBlock; }
-            if (!Arrays.equals(previousJournalBlock.getBlockHash(), journalBlock.getPreviousBlockHash())) {
-                throw new IllegalStateException("Previous block hash doesn't match.");
+        journalBlocks.stream().reduce(null) { previousJournalBlock: JournalBlock?, journalBlock: JournalBlock ->
+            journalBlock.verifyBlockHash()
+            if (previousJournalBlock == null) {
+                return@reduce journalBlock
             }
-            byte[] blockHash = Verifier.dot(journalBlock.getEntriesHash(), previousJournalBlock.getBlockHash());
-            if (!Arrays.equals(blockHash, journalBlock.getBlockHash())) {
-                throw new IllegalStateException("Block hash doesn't match entriesHash dot previousBlockHash, the chain is "
-                        + "broken.");
+            check(
+                Arrays.equals(
+                    previousJournalBlock.blockHash,
+                    journalBlock.previousBlockHash
+                )
+            ) { "Previous block hash doesn't match." }
+            val blockHash = Verifier.dot(journalBlock.entriesHash, previousJournalBlock.blockHash)
+            check(Arrays.equals(blockHash, journalBlock.blockHash)) {
+                ("Block hash doesn't match entriesHash dot previousBlockHash, the chain is "
+                        + "broken.")
             }
-            return journalBlock;
-        });
+            journalBlock
+        }
     }
 
-    public static void main(final String... args) throws InterruptedException {
+    @Throws(InterruptedException::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
         try {
-            String exportId;
-            if (args.length == 1) {
-                exportId = args[0];
-                log.info("Validating QLDB hash chain for exportId: " + exportId);
+            val exportId: String
+            if (args.size == 1) {
+                exportId = args[0]
+                log.info("Validating QLDB hash chain for exportId: $exportId")
             } else {
-                log.info("Requesting QLDB to create an export.");
-                exportId = createExport();
+                log.info("Requesting QLDB to create an export.")
+                exportId = createExport()
             }
-            List<JournalBlock> journalBlocks =
-                JournalS3ExportReader.readExport(DescribeJournalExport.describeExport(Constants.LEDGER_NAME,
-                    exportId), AmazonS3ClientBuilder.defaultClient());
-            verify(journalBlocks);
-        } catch (Exception e) {
-            log.error("Unable to perform hash chain verification.", e);
-            throw e;
+            val journalBlocks: List<JournalBlock> = readExport(
+                describeExport(
+                    Constants.LEDGER_NAME,
+                    exportId
+                ), AmazonS3ClientBuilder.defaultClient()
+            )
+            verify(journalBlocks)
+        } catch (e: Exception) {
+            log.error("Unable to perform hash chain verification.", e)
+            throw e
         }
     }
-
 }

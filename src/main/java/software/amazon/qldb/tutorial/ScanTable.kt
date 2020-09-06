@@ -15,20 +15,17 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+package software.amazon.qldb.tutorial
 
-package software.amazon.qldb.tutorial;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazon.ion.IonStruct;
-
-import software.amazon.qldb.Result;
-import software.amazon.qldb.TransactionExecutor;
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonValue
+import org.slf4j.LoggerFactory
+import software.amazon.qldb.Result
+import software.amazon.qldb.TransactionExecutor
+import software.amazon.qldb.tutorial.ConnectToLedger.driver
+import java.util.*
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
 /**
  * Scan for all the documents in a table.
@@ -36,71 +33,71 @@ import software.amazon.qldb.TransactionExecutor;
  * This code expects that you have AWS credentials setup per:
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
-public final class ScanTable {
-    private static final Logger log = LoggerFactory.getLogger(ScanTable.class);
-
-    private ScanTable() { }
+object ScanTable {
+    private val log = LoggerFactory.getLogger(ScanTable::class.java)
 
     /**
-     * Scan the table with the given {@code tableName} for all documents.
+     * Scan the table with the given `tableName` for all documents.
      *
      * @param txn
-     *              The {@link TransactionExecutor} for lambda execute.
+     * The [TransactionExecutor] for lambda execute.
      * @param tableName
-     *              Name of the table to scan.
-     * @return a list of documents in {@link IonStruct} .
+     * Name of the table to scan.
+     * @return a list of documents in [IonStruct] .
      */
-    public static List<IonStruct> scanTableForDocuments(final TransactionExecutor txn, final String tableName) {
-        log.info("Scanning '{}'...", tableName);
-        final String scanTable = String.format("SELECT * FROM %s", tableName);
-        List<IonStruct> documents = toIonStructs(txn.execute(scanTable));
-        log.info("Scan successful!");
-        printDocuments(documents);
-        return documents;
+    private fun scanTableForDocuments(txn: TransactionExecutor, tableName: String): List<IonStruct> {
+        log.info("Scanning '{}'...", tableName)
+        val scanTable = "SELECT * FROM $tableName"
+        val documents = toIonStructs(txn.execute(scanTable))
+        log.info("Scan successful!")
+        printDocuments(documents)
+        return documents
     }
 
     /**
-     * Pretty print all elements in the provided {@link Result}.
+     * Pretty print all elements in the provided [Result].
      *
      * @param result
-     *              {@link Result} from executing a query.
+     * [Result] from executing a query.
      */
-    public static void printDocuments(final Result result) {
-        result.iterator().forEachRemaining(row -> log.info(row.toPrettyString()));
+    @JvmStatic
+    fun printDocuments(result: Result) {
+        result.iterator().forEachRemaining { row: IonValue -> log.info(row.toPrettyString()) }
     }
 
     /**
-     * Pretty print all elements in the provided list of {@link IonStruct}.
+     * Pretty print all elements in the provided list of [IonStruct].
      *
      * @param documents
-     *              List of documents to print.
+     * List of documents to print.
      */
-    public static void printDocuments(final List<IonStruct> documents) {
-        documents.forEach(row -> log.info(row.toPrettyString()));
+    @JvmStatic
+    fun printDocuments(documents: List<IonStruct>) {
+        documents.forEach(Consumer { row: IonStruct -> log.info(row.toPrettyString()) })
     }
 
     /**
-     * Convert the result set into a list of {@link IonStruct}.
+     * Convert the result set into a list of [IonStruct].
      *
      * @param result
-     *              {@link Result} from executing a query.
+     * [Result] from executing a query.
      * @return a list of documents in IonStruct.
      */
-    public static List<IonStruct> toIonStructs(final Result result) {
-        final List<IonStruct> documentList = new ArrayList<>();
-        result.iterator().forEachRemaining(row -> documentList.add((IonStruct) row));
-        return documentList;
+    @JvmStatic
+    fun toIonStructs(result: Result): List<IonStruct> {
+        val documentList: MutableList<IonStruct> = ArrayList()
+        result.iterator().forEachRemaining { row: IonValue -> documentList.add(row as IonStruct) }
+        return documentList
     }
 
-    public static void main(final String... args) {
-        ConnectToLedger.getDriver().execute(txn -> {
-            List<String> tableNames = scanTableForDocuments(txn, Constants.USER_TABLES)
-                .stream()
-                .map((s) -> s.get("name").toString())
-                .collect(Collectors.toList());
-            for (String tableName : tableNames) {
-                scanTableForDocuments(txn, tableName);
+    @JvmStatic
+    fun main(args: Array<String>) {
+        driver.execute { txn ->
+            val tableNames = scanTableForDocuments(txn, Constants.USER_TABLES)
+                .map { it["name"].toString() }
+            for (tableName in tableNames) {
+                scanTableForDocuments(txn, tableName)
             }
-        });
+        }
     }
 }
