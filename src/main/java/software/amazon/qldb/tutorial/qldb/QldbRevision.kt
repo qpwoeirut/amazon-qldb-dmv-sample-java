@@ -66,12 +66,7 @@ class QldbRevision @JsonCreator constructor(
      * @return the string representation of the [QldbRevision] object.
      */
     override fun toString(): String {
-        return "QldbRevision{" +
-                "blockAddress=" + blockAddress +
-                ", metadata=" + metadata +
-                ", hash=" + hash.contentToString() +
-                ", data=" + data +
-                '}'
+        return "QldbRevision{blockAddress=$blockAddress, metadata=$metadata, hash=${hash.contentToString()}, data=$data}"
     }
 
     /**

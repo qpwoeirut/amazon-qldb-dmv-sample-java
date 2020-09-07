@@ -188,7 +188,7 @@ object GetRevision {
      * The location of the block to request.
      * @return the requested revision.
      */
-    fun getRevision(
+    private fun getRevision(
         ledgerName: String, documentId: String,
         digestTipAddress: ValueHolder, blockAddress: BlockAddress
     ): GetRevisionResult {
@@ -220,7 +220,6 @@ object GetRevision {
      * @throws IllegalStateException if failed to convert parameters into [IonValue]
      */
     fun queryRegistrationsByVin(txn: TransactionExecutor, vin: String): List<IonStruct> {
-        log.info(String.format("Let's query the 'VehicleRegistration' table for VIN: %s...", vin))
         log.info("Let's query the 'VehicleRegistration' table for VIN: {}...", vin)
         val query = String.format(
             "SELECT * FROM _ql_committed_%s WHERE data.VIN = ?",
