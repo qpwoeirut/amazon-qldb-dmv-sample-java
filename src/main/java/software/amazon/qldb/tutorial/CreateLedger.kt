@@ -36,8 +36,8 @@ object CreateLedger {
     var endpoint: String? = null
     var region: String? = null
 
+    @get:JvmStatic
     val client = buildClient()
-        @JvmStatic get
 
     /**
      * Build a low-level QLDB client.

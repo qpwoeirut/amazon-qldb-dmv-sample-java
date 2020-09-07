@@ -19,42 +19,15 @@ package software.amazon.qldb.tutorial.qldb
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.slf4j.LoggerFactory
-import java.util.*
 
 /**
  * Represents the BlockAddress field of a QLDB document.
  */
-class BlockAddress @JsonCreator constructor(
+data class BlockAddress @JsonCreator constructor(
     @param:JsonProperty("strandId") val strandId: String,
     @param:JsonProperty("sequenceNo") val sequenceNo: Long
 ) {
     override fun toString(): String {
-        return ("BlockAddress{"
-                + "strandId='" + strandId + '\''
-                + ", sequenceNo=" + sequenceNo
-                + '}')
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null || javaClass != other.javaClass) {
-            return false
-        }
-        val that = other as BlockAddress
-        return (sequenceNo == that.sequenceNo
-                && strandId == that.strandId)
-    }
-
-    override fun hashCode(): Int {
-        // CHECKSTYLE:OFF - Disabling as we are generating a hashCode of multiple properties.
-        return Objects.hash(strandId, sequenceNo)
-        // CHECKSTYLE:ON
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(BlockAddress::class.java)
+        return "BlockAddress{strandId='$strandId', sequenceNo=$sequenceNo}"
     }
 }

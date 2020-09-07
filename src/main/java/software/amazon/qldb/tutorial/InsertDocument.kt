@@ -75,7 +75,7 @@ object InsertDocument {
      * @param registrations
      * List of registrations to update.
      */
-    fun updatePersonId(
+    private fun updatePersonId(
         documentIds: List<String>, licenses: MutableList<DriversLicense>,
         registrations: MutableList<VehicleRegistration>
     ) {
