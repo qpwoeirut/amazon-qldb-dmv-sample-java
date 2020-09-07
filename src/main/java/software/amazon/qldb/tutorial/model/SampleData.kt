@@ -39,94 +39,90 @@ const val nullPersonId = ""
  */
 object SampleData {
     val DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
     @JvmField
-    val REGISTRATIONS = Collections.unmodifiableList(
-        Arrays.asList(
-            VehicleRegistration(
-                "1N4AL11D75C109151", "LEWISR261LL", "WA", "Seattle",
-                BigDecimal.valueOf(90.25), convertToLocalDate("2017-08-21"), convertToLocalDate("2020-05-11"),
-                Owners(Owner(nullPersonId), emptyList())
-            ),
-            VehicleRegistration(
-                "KM8SRDHF6EU074761", "CA762X", "WA", "Kent",
-                BigDecimal.valueOf(130.75), convertToLocalDate("2017-09-14"), convertToLocalDate("2020-06-25"),
-                Owners(Owner(nullPersonId), emptyList())
-            ),
-            VehicleRegistration(
-                "3HGGK5G53FM761765", "CD820Z", "WA", "Everett",
-                BigDecimal.valueOf(442.30), convertToLocalDate("2011-03-17"), convertToLocalDate("2021-03-24"),
-                Owners(Owner(nullPersonId), emptyList())
-            ),
-            VehicleRegistration(
-                "1HVBBAANXWH544237", "LS477D", "WA", "Tacoma",
-                BigDecimal.valueOf(42.20), convertToLocalDate("2011-10-26"), convertToLocalDate("2023-09-25"),
-                Owners(Owner(nullPersonId), emptyList())
-            ),
-            VehicleRegistration(
-                "1C4RJFAG0FC625797", "TH393F", "WA", "Olympia",
-                BigDecimal.valueOf(30.45), convertToLocalDate("2013-09-02"), convertToLocalDate("2024-03-19"),
-                Owners(Owner(nullPersonId), emptyList())
-            )
+    val REGISTRATIONS = listOf(
+        VehicleRegistration(
+            "1N4AL11D75C109151", "LEWISR261LL", "WA", "Seattle",
+            BigDecimal.valueOf(90.25), convertToLocalDate("2017-08-21"), convertToLocalDate("2020-05-11"),
+            Owners(Owner(nullPersonId), emptyList())
+        ),
+        VehicleRegistration(
+            "KM8SRDHF6EU074761", "CA762X", "WA", "Kent",
+            BigDecimal.valueOf(130.75), convertToLocalDate("2017-09-14"), convertToLocalDate("2020-06-25"),
+            Owners(Owner(nullPersonId), emptyList())
+        ),
+        VehicleRegistration(
+            "3HGGK5G53FM761765", "CD820Z", "WA", "Everett",
+            BigDecimal.valueOf(442.30), convertToLocalDate("2011-03-17"), convertToLocalDate("2021-03-24"),
+            Owners(Owner(nullPersonId), emptyList())
+        ),
+        VehicleRegistration(
+            "1HVBBAANXWH544237", "LS477D", "WA", "Tacoma",
+            BigDecimal.valueOf(42.20), convertToLocalDate("2011-10-26"), convertToLocalDate("2023-09-25"),
+            Owners(Owner(nullPersonId), emptyList())
+        ),
+        VehicleRegistration(
+            "1C4RJFAG0FC625797", "TH393F", "WA", "Olympia",
+            BigDecimal.valueOf(30.45), convertToLocalDate("2013-09-02"), convertToLocalDate("2024-03-19"),
+            Owners(Owner(nullPersonId), emptyList())
         )
     )
+
     @JvmField
-    val VEHICLES = Collections.unmodifiableList(
-        Arrays.asList(
-            Vehicle("1N4AL11D75C109151", "Sedan", 2011, "Audi", "A5", "Silver"),
-            Vehicle("KM8SRDHF6EU074761", "Sedan", 2015, "Tesla", "Model S", "Blue"),
-            Vehicle("3HGGK5G53FM761765", "Motorcycle", 2011, "Ducati", "Monster 1200", "Yellow"),
-            Vehicle("1HVBBAANXWH544237", "Semi", 2009, "Ford", "F 150", "Black"),
-            Vehicle("1C4RJFAG0FC625797", "Sedan", 2019, "Mercedes", "CLK 350", "White")
+    val VEHICLES = listOf(
+        Vehicle("1N4AL11D75C109151", "Sedan", 2011, "Audi", "A5", "Silver"),
+        Vehicle("KM8SRDHF6EU074761", "Sedan", 2015, "Tesla", "Model S", "Blue"),
+        Vehicle("3HGGK5G53FM761765", "Motorcycle", 2011, "Ducati", "Monster 1200", "Yellow"),
+        Vehicle("1HVBBAANXWH544237", "Semi", 2009, "Ford", "F 150", "Black"),
+        Vehicle("1C4RJFAG0FC625797", "Sedan", 2019, "Mercedes", "CLK 350", "White")
+    )
+
+    @JvmField
+    val PEOPLE = listOf(
+        Person(
+            "Raul", "Lewis", convertToLocalDate("1963-08-19"),
+            "LEWISR261LL", "Driver License", "1719 University Street, Seattle, WA, 98109"
+        ),
+        Person(
+            "Brent", "Logan", convertToLocalDate("1967-07-03"),
+            "LOGANB486CG", "Driver License", "43 Stockert Hollow Road, Everett, WA, 98203"
+        ),
+        Person(
+            "Alexis", "Pena", convertToLocalDate("1974-02-10"),
+            "744 849 301", "SSN", "4058 Melrose Street, Spokane Valley, WA, 99206"
+        ),
+        Person(
+            "Melvin", "Parker", convertToLocalDate("1976-05-22"),
+            "P626-168-229-765", "Passport", "4362 Ryder Avenue, Seattle, WA, 98101"
+        ),
+        Person(
+            "Salvatore", "Spencer", convertToLocalDate("1997-11-15"),
+            "S152-780-97-415-0", "Passport", "4450 Honeysuckle Lane, Seattle, WA, 98101"
         )
     )
+
     @JvmField
-    val PEOPLE = Collections.unmodifiableList(
-        Arrays.asList(
-            Person(
-                "Raul", "Lewis", convertToLocalDate("1963-08-19"),
-                "LEWISR261LL", "Driver License", "1719 University Street, Seattle, WA, 98109"
-            ),
-            Person(
-                "Brent", "Logan", convertToLocalDate("1967-07-03"),
-                "LOGANB486CG", "Driver License", "43 Stockert Hollow Road, Everett, WA, 98203"
-            ),
-            Person(
-                "Alexis", "Pena", convertToLocalDate("1974-02-10"),
-                "744 849 301", "SSN", "4058 Melrose Street, Spokane Valley, WA, 99206"
-            ),
-            Person(
-                "Melvin", "Parker", convertToLocalDate("1976-05-22"),
-                "P626-168-229-765", "Passport", "4362 Ryder Avenue, Seattle, WA, 98101"
-            ),
-            Person(
-                "Salvatore", "Spencer", convertToLocalDate("1997-11-15"),
-                "S152-780-97-415-0", "Passport", "4450 Honeysuckle Lane, Seattle, WA, 98101"
-            )
-        )
-    )
-    @JvmField
-    val LICENSES = Collections.unmodifiableList(
-        Arrays.asList(
-            DriversLicense(
-                nullPersonId, "LEWISR261LL", "Learner",
-                convertToLocalDate("2016-12-20"), convertToLocalDate("2020-11-15")
-            ),
-            DriversLicense(
-                nullPersonId, "LOGANB486CG", "Probationary",
-                convertToLocalDate("2016-04-06"), convertToLocalDate("2020-11-15")
-            ),
-            DriversLicense(
-                nullPersonId, "744 849 301", "Full",
-                convertToLocalDate("2017-12-06"), convertToLocalDate("2022-10-15")
-            ),
-            DriversLicense(
-                nullPersonId, "P626-168-229-765", "Learner",
-                convertToLocalDate("2017-08-16"), convertToLocalDate("2021-11-15")
-            ),
-            DriversLicense(
-                nullPersonId, "S152-780-97-415-0", "Probationary",
-                convertToLocalDate("2015-08-15"), convertToLocalDate("2021-08-21")
-            )
+    val LICENSES = listOf(
+        DriversLicense(
+            nullPersonId, "LEWISR261LL", "Learner",
+            convertToLocalDate("2016-12-20"), convertToLocalDate("2020-11-15")
+        ),
+        DriversLicense(
+            nullPersonId, "LOGANB486CG", "Probationary",
+            convertToLocalDate("2016-04-06"), convertToLocalDate("2020-11-15")
+        ),
+        DriversLicense(
+            nullPersonId, "744 849 301", "Full",
+            convertToLocalDate("2017-12-06"), convertToLocalDate("2022-10-15")
+        ),
+        DriversLicense(
+            nullPersonId, "P626-168-229-765", "Learner",
+            convertToLocalDate("2017-08-16"), convertToLocalDate("2021-11-15")
+        ),
+        DriversLicense(
+            nullPersonId, "S152-780-97-415-0", "Probationary",
+            convertToLocalDate("2015-08-15"), convertToLocalDate("2021-08-21")
         )
     )
 
