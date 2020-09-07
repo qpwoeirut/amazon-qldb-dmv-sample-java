@@ -34,11 +34,11 @@ import java.net.URISyntaxException
  * http://docs.aws.amazon.com/java-sdk/latest/developer-guide/setup-credentials.html
  */
 object ConnectToLedger {
-    val log = LoggerFactory.getLogger(ConnectToLedger::class.java)
+    private val log = LoggerFactory.getLogger(ConnectToLedger::class.java)
     private var credentialsProvider: AwsCredentialsProvider? = null
     private var endpoint: String? = null
-    const val ledgerName = Constants.LEDGER_NAME
-    val region: String? = null
+    private const val ledgerName = Constants.LEDGER_NAME
+    private val region: String? = null
 
     @get:JvmStatic
     var driver: QldbDriver = createQldbDriver()
@@ -51,7 +51,7 @@ object ConnectToLedger {
      * server side failures or network issues.
      * @return The pooled driver for creating sessions.
      */
-    fun createQldbDriver(retryAttempts: Int): QldbDriver {
+    private fun createQldbDriver(retryAttempts: Int = Constants.RETRY_LIMIT): QldbDriver {
         val builder = amazonQldbSessionClientBuilder
         return QldbDriver.builder()
             .ledger(ledgerName)
@@ -60,23 +60,6 @@ object ConnectToLedger {
                     .builder()
                     .maxRetries(retryAttempts)
                     .build()
-            )
-            .sessionClientBuilder(builder)
-            .build()
-    }
-
-    /**
-     * Create a pooled driver for creating sessions.
-     *
-     * @return The pooled driver for creating sessions.
-     */
-    private fun createQldbDriver(): QldbDriver {
-        val builder = amazonQldbSessionClientBuilder
-        return QldbDriver.builder()
-            .ledger(ledgerName)
-            .transactionRetryPolicy(
-                RetryPolicy.builder()
-                    .maxRetries(Constants.RETRY_LIMIT).build()
             )
             .sessionClientBuilder(builder)
             .build()
