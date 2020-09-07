@@ -27,7 +27,6 @@ import software.amazon.qldb.tutorial.Verifier
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.*
-import java.util.function.Consumer
 import java.util.stream.Collectors
 
 /**
@@ -150,7 +149,7 @@ class JournalBlock @JsonCreator constructor(
             )
         ) { "Block transactionInfo hash is not contained in the QLDB block entries hash list." }
 
-        revisions.forEach(Consumer { obj: QldbRevision -> obj.verifyRevisionHash() })
+        revisions.forEach { it.verifyRevisionHash() }
         val computedRevisionsHash = computeRevisionsHash()
         require(
             entriesHashSet.contains(

@@ -24,8 +24,6 @@ import software.amazon.qldb.Result
 import software.amazon.qldb.TransactionExecutor
 import software.amazon.qldb.tutorial.ConnectToLedger.driver
 import java.util.*
-import java.util.function.Consumer
-import java.util.stream.Collectors
 
 /**
  * Scan for all the documents in a table.
@@ -73,7 +71,7 @@ object ScanTable {
      */
     @JvmStatic
     fun printDocuments(documents: List<IonStruct>) {
-        documents.forEach(Consumer { row: IonStruct -> log.info(row.toPrettyString()) })
+        documents.forEach { log.info(it.toPrettyString()) }
     }
 
     /**

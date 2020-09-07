@@ -30,7 +30,6 @@ import software.amazon.qldb.tutorial.model.SampleData.getDocumentIdsFromDmlResul
 import java.io.IOException
 import java.time.LocalDate
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * Find the person associated with a license number.
@@ -123,7 +122,7 @@ object RenewDriversLicense {
             val result = txn.execute(query, parameters)
             val list = getDocumentIdsFromDmlResult(result)
             log.info("DriversLicense Document IDs which had licenses renewed: ")
-            list.forEach(Consumer { msg -> log.info(msg) })
+            list.forEach { msg -> log.info(msg) }
             list
         } catch (ioe: IOException) {
             throw IllegalStateException(ioe)

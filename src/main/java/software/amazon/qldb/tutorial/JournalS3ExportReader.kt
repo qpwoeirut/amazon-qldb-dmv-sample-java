@@ -17,7 +17,10 @@
  */
 package software.amazon.qldb.tutorial
 
-import com.amazon.ion.*
+import com.amazon.ion.IonList
+import com.amazon.ion.IonString
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonType
 import com.amazon.ion.system.IonReaderBuilder
 import com.amazon.ion.system.IonSystemBuilder
 import com.amazonaws.services.qldb.model.DescribeJournalS3ExportResult
@@ -29,7 +32,6 @@ import org.slf4j.LoggerFactory
 import software.amazon.qldb.tutorial.qldb.JournalBlock
 import java.io.IOException
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * Given bucket, prefix and exportId, read the contents of the export and return
@@ -62,8 +64,7 @@ object JournalS3ExportReader {
             .withPrefix(exportConfiguration.prefix)
         val listObjectsV2Result = amazonS3.listObjectsV2(listObjectsRequest)
         log.info("Found the following objects for list from s3: ")
-        listObjectsV2Result.objectSummaries
-            .forEach(Consumer { s3ObjectSummary: S3ObjectSummary -> log.info(s3ObjectSummary.key) })
+        listObjectsV2Result.objectSummaries.forEach { log.info(it.key) }
 
         // Validate initial manifest file was written.
         val expectedManifestKey = exportConfiguration.prefix +
@@ -178,7 +179,7 @@ object JournalS3ExportReader {
         val keys: MutableList<String> = ArrayList()
         val ionStruct = SYSTEM.newValue(ionReader) as IonStruct
         val ionKeysList = ionStruct["keys"] as IonList
-        ionKeysList.forEach(Consumer { key: IonValue -> keys.add((key as IonString).stringValue()) })
+        ionKeysList.forEach { key -> keys.add((key as IonString).stringValue()) }
         return keys
     }
 }

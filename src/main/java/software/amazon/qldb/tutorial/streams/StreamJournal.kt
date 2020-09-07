@@ -66,7 +66,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
 import kotlin.system.exitProcess
@@ -433,9 +432,9 @@ object StreamJournal {
                 .withLedgerName(ledgerName)
                 .withNextToken(nextToken)
             val listResult = qldb.listJournalKinesisStreamsForLedger(listRequest)
-            listResult.streams.forEach(Consumer { streamDescription: JournalKinesisStreamDescription ->
+            listResult.streams.forEach { streamDescription ->
                 streams[streamDescription.streamId] = streamDescription
-            })
+            }
             nextToken = listResult.nextToken
         } while (nextToken != null)
         return streams
@@ -636,7 +635,7 @@ object StreamJournal {
 
         override fun processRecords(records: List<Record>, iRecordProcessorCheckpointer: IRecordProcessorCheckpointer) {
             log.info("Processing {} record(s)", records.size)
-            records.forEach(Consumer { r: Record ->
+            records.forEach { r: Record ->
                 try {
                     log.info("------------------------------------------------")
                     log.info(
@@ -654,7 +653,7 @@ object StreamJournal {
                 } catch (e: Exception) {
                     log.warn("Error processing record. ", e)
                 }
-            })
+            }
         }
 
         @Throws(IOException::class)
