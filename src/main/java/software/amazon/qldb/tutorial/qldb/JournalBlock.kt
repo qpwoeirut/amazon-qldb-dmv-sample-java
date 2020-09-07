@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.dataformat.ion.IonTimestampSerializers.IonTimestampJavaDateSerializer
-import org.slf4j.LoggerFactory
 import software.amazon.qldb.tutorial.Constants
 import software.amazon.qldb.tutorial.Verifier
 import java.io.IOException
@@ -49,10 +48,10 @@ class JournalBlock @JsonCreator constructor(
         return """JournalBlock{blockAddress=$blockAddress, 
                     |transactionId='$transactionId', 
                     |blockTimestamp=$blockTimestamp, 
-                    |blockHash=${Arrays.toString(blockHash)}, 
-                    |entriesHash=${Arrays.toString(entriesHash)}, 
-                    |previousBlockHash=${Arrays.toString(previousBlockHash)},
-                    |entriesHashList=${Arrays.toString(entriesHashList)},
+                    |blockHash=${blockHash.contentToString()}, 
+                    |entriesHash=${entriesHash.contentToString()}, 
+                    |previousBlockHash=${previousBlockHash.contentToString()},
+                    |entriesHashList=${entriesHashList.contentToString()},
                     |transactionInfo=$transactionInfo,
                     |revisions=$revisions
                     |}""".trimMargin()
@@ -158,19 +157,13 @@ class JournalBlock @JsonCreator constructor(
         ) { "Block revisions list hash is not contained in the QLDB block entries hash list." }
 
         val computedEntriesHash = computeEntriesHash()
-        require(
-            Arrays.equals(
-                computedEntriesHash,
-                entriesHash
-            )
-        ) { "Computed entries hash does not match entries hash provided in the block." }
+        require(computedEntriesHash.contentEquals(entriesHash)) {
+            "Computed entries hash does not match entries hash provided in the block."
+        }
         val computedBlockHash = Verifier.dot(computedEntriesHash, previousBlockHash)
-        require(
-            Arrays.equals(
-                computedBlockHash,
-                blockHash
-            )
-        ) { "Computed block hash does not match block hash provided in the block." }
+        require(computedBlockHash.contentEquals(blockHash)) {
+            "Computed block hash does not match block hash provided in the block."
+        }
     }
 
     private fun computeTransactionInfoHash(): ByteArray {
@@ -191,10 +184,6 @@ class JournalBlock @JsonCreator constructor(
     }
 
     private fun computeEntriesHash(): ByteArray {
-        return Verifier.calculateMerkleTreeRootHash(Arrays.asList(*entriesHashList))
-    }
-
-    companion object {
-        private val log = LoggerFactory.getLogger(JournalBlock::class.java)
+        return Verifier.calculateMerkleTreeRootHash(listOf(*entriesHashList))
     }
 }

@@ -25,7 +25,6 @@ import software.amazon.qldb.QldbDriver
 import software.amazon.qldb.RetryPolicy
 import java.net.URI
 import java.net.URISyntaxException
-import java.sql.DriverManager.getDriver
 
 /**
  * Connect to a session for a given ledger using default settings.
@@ -36,9 +35,9 @@ import java.sql.DriverManager.getDriver
  */
 object ConnectToLedger {
     val log = LoggerFactory.getLogger(ConnectToLedger::class.java)
-    var credentialsProvider: AwsCredentialsProvider? = null
-    var endpoint: String? = null
-    val ledgerName = Constants.LEDGER_NAME
+    private var credentialsProvider: AwsCredentialsProvider? = null
+    private var endpoint: String? = null
+    const val ledgerName = Constants.LEDGER_NAME
     val region: String? = null
 
     @get:JvmStatic
@@ -71,7 +70,7 @@ object ConnectToLedger {
      *
      * @return The pooled driver for creating sessions.
      */
-    fun createQldbDriver(): QldbDriver {
+    private fun createQldbDriver(): QldbDriver {
         val builder = amazonQldbSessionClientBuilder
         return QldbDriver.builder()
             .ledger(ledgerName)
@@ -94,7 +93,7 @@ object ConnectToLedger {
             val builder = QldbSessionClient.builder()
             if (null != endpoint && null != region) {
                 try {
-                    builder.endpointOverride(URI(endpoint))
+                    builder.endpointOverride(URI(endpoint!!))
                 } catch (e: URISyntaxException) {
                     throw IllegalArgumentException(e)
                 }
