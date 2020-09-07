@@ -63,7 +63,7 @@ class RevisionMetadata @JsonCreator constructor(
      * @return the string representation of the [QldbRevision] object.
      */
     override fun toString(): String {
-        return "Metadata{id='$id', version=$version, txTime=$txTime, txId='$txId'"
+        return """Metadata{id="$id", version=$version, txTime="$txTime", txId="$txId"}"""
     }
 
     /**

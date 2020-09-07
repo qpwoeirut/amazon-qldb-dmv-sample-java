@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import org.slf4j.LoggerFactory
 import software.amazon.qldb.tutorial.Constants
 import software.amazon.qldb.tutorial.Verifier
+import software.amazon.qldb.tutorial.base64encode
 import software.amazon.qldb.tutorial.qldb.QldbIonUtils.hashIonValue
 import java.io.IOException
 import java.util.*
@@ -33,7 +34,7 @@ import java.util.*
  */
 class QldbRevision @JsonCreator constructor(
     /**
-     * Gets the unique ID of a QLDB document.
+     * Gets the [BlockAddress] of a QLDB document.
      *
      * @return the [BlockAddress] object.
      */
@@ -66,7 +67,7 @@ class QldbRevision @JsonCreator constructor(
      * @return the string representation of the [QldbRevision] object.
      */
     override fun toString(): String {
-        return "QldbRevision{blockAddress=$blockAddress, metadata=$metadata, hash=${hash.contentToString()}, data=$data}"
+        return """QldbRevision{blockAddress=$blockAddress, metadata=$metadata, hash="${hash.base64encode()}", data=$data}"""
     }
 
     /**
