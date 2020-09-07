@@ -22,6 +22,7 @@ import com.amazon.ion.system.IonTextWriterBuilder
 import com.amazonaws.services.qldb.model.GetBlockResult
 import com.amazonaws.services.qldb.model.GetDigestResult
 import com.amazonaws.services.qldb.model.ValueHolder
+import software.amazon.qldb.tutorial.base64encode
 import java.io.IOException
 
 /**
@@ -86,7 +87,7 @@ object QldbStringUtils {
         val sb = StringBuilder()
         sb.append("{")
         if (getDigestResult.digest != null) {
-            sb.append("Digest: ").append(getDigestResult.digest).append(",")
+            sb.append("Digest-Base64: ${getDigestResult.digest.array().base64encode()}, ")
         }
         if (getDigestResult.digestTipAddress != null) {
             sb.append("DigestTipAddress: ").append(toUnredactedString(getDigestResult.digestTipAddress))
